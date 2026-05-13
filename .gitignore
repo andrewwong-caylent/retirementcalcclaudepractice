@@ -1,0 +1,9 @@
+# macOS system files - created automatically by Mac, not part of your project
+.DS_Store
+
+# If you ever add Node packages, this folder can be huge - don't commit it
+node_modules/
+
+# Editor config files (personal preference, not project code)
+.vscode/
+.idea/

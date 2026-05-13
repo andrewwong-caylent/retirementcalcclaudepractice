@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- This makes the page look correct on mobile phones -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canadian Retirement Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>Canadian Retirement Calculator</h1>
+    <p class="subtitle">Estimate your retirement income from CPP, OAS, and personal savings.</p>
+
+    <form id="calculator-form">
+
+      <!-- SECTION 1: About You -->
+      <section class="card">
+        <h2>About You</h2>
+
+        <div class="field">
+          <label for="current-age">Current Age</label>
+          <input type="number" id="current-age" min="18" max="90" value="35" />
+        </div>
+
+        <div class="field">
+          <label for="retirement-age">Retirement Age</label>
+          <input type="number" id="retirement-age" min="55" max="75" value="65" />
+        </div>
+
+        <div class="field">
+          <label for="annual-income">Current Annual Income ($)</label>
+          <input type="number" id="annual-income" min="0" value="75000" />
+        </div>
+      </section>
+
+      <!-- SECTION 2: CPP -->
+      <section class="card">
+        <h2>Canada Pension Plan (CPP)</h2>
+        <p class="hint">CPP is a government pension based on your contributions while working. The maximum monthly amount in 2024 is ~$1,364.</p>
+
+        <div class="field">
+          <label for="cpp-years">Years Contributed to CPP</label>
+          <input type="number" id="cpp-years" min="0" max="47" value="10" />
+        </div>
+
+        <div class="field">
+          <label for="cpp-start-age">Age to Start CPP</label>
+          <select id="cpp-start-age">
+            <option value="60">60 (reduced by 36%)</option>
+            <option value="65" selected>65 (standard amount)</option>
+            <option value="70">70 (increased by 42%)</option>
+          </select>
+          <span class="hint">Starting earlier means smaller monthly payments. Starting later means larger ones.</span>
+        </div>
+      </section>
+
+      <!-- SECTION 3: OAS -->
+      <section class="card">
+        <h2>Old Age Security (OAS)</h2>
+        <p class="hint">OAS is a flat monthly benefit paid to most Canadians at age 65. The maximum in 2024 is ~$713/month.</p>
+
+        <div class="field">
+          <label for="oas-years">Years Lived in Canada After Age 18</label>
+          <input type="number" id="oas-years" min="0" max="40" value="40" />
+          <span class="hint">You need 40 years for the full amount. Fewer years = proportionally less.</span>
+        </div>
+      </section>
+
+      <!-- SECTION 4: Personal Savings -->
+      <section class="card">
+        <h2>Personal Savings (RRSP / TFSA)</h2>
+        <p class="hint">Money you've saved yourself in registered accounts.</p>
+
+        <div class="field">
+          <label for="current-savings">Current Savings Balance ($)</label>
+          <input type="number" id="current-savings" min="0" value="50000" />
+        </div>
+
+        <div class="field">
+          <label for="monthly-contribution">Monthly Contribution ($)</label>
+          <input type="number" id="monthly-contribution" min="0" value="500" />
+        </div>
+
+        <div class="field">
+          <label for="return-rate">Expected Annual Return (%)</label>
+          <input type="number" id="return-rate" min="0" max="20" step="0.5" value="5" />
+          <span class="hint">A balanced portfolio has historically returned ~5-7% per year.</span>
+        </div>
+
+        <div class="field">
+          <label for="withdrawal-years">Years in Retirement</label>
+          <input type="number" id="withdrawal-years" min="1" max="50" value="25" />
+          <span class="hint">How many years will your savings need to last?</span>
+        </div>
+      </section>
+
+      <button type="button" id="calculate-btn">Calculate My Retirement</button>
+
+    </form>
+
+    <!-- RESULTS (hidden until calculate is clicked) -->
+    <div id="results" class="card results hidden">
+      <h2>Your Retirement Estimate</h2>
+
+      <div class="result-grid">
+        <div class="result-item">
+          <span class="result-label">CPP Monthly</span>
+          <span class="result-value" id="cpp-result">-</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">OAS Monthly</span>
+          <span class="result-value" id="oas-result">-</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Savings at Retirement</span>
+          <span class="result-value" id="savings-result">-</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Monthly from Savings</span>
+          <span class="result-value" id="savings-monthly-result">-</span>
+        </div>
+        <div class="result-item total">
+          <span class="result-label">Total Monthly Income</span>
+          <span class="result-value" id="total-result">-</span>
+        </div>
+        <div class="result-item total">
+          <span class="result-label">Total Annual Income</span>
+          <span class="result-value" id="annual-result">-</span>
+        </div>
+      </div>
+
+      <p class="disclaimer">These are estimates only. Consult a financial advisor for personalized advice. CPP and OAS amounts are based on 2024 figures and will change with inflation.</p>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
