@@ -127,6 +127,25 @@ function calculateMonthlyWithdrawal(totalSavings, annualReturnRate, withdrawalYe
 }
 
 
+// --- INFLATION ADJUSTMENT ---
+// Inflation erodes purchasing power over time.
+// "$4,000/month at retirement" sounds good, but if that's 30 years away,
+// it only buys what ~$2,000 buys today (at 2.5% inflation).
+//
+// "Nominal" = the actual dollar number at that future date
+// "Real"    = what that money is worth in today's dollars
+//
+// Formula: Real Value = Nominal Value / (1 + inflationRate)^years
+//
+// We use this to convert future amounts back to today's dollars.
+
+function toRealDollars(nominalAmount, annualInflationRate, years) {
+  if (annualInflationRate === 0 || years === 0) return nominalAmount;
+  const inflationFactor = Math.pow(1 + annualInflationRate / 100, years);
+  return nominalAmount / inflationFactor;
+}
+
+
 // --- MAIN CALCULATE FUNCTION ---
 // This runs when the user clicks "Calculate My Retirement".
 // It reads all the inputs, runs the calculations, and displays the results.
@@ -143,6 +162,9 @@ function calculate() {
   const monthlyContrib     = getInput("monthly-contribution");
   const returnRate         = getInput("return-rate");
   const withdrawalYears    = getInput("withdrawal-years");
+  const inflationRate      = getInput("inflation-rate");
+  // .checked reads whether a checkbox is ticked (true/false)
+  const showRealDollars    = document.getElementById("show-real").checked;
 
   // 2. Basic validation
   if (retirementAge <= currentAge) {
@@ -152,31 +174,63 @@ function calculate() {
 
   const yearsToRetirement = retirementAge - currentAge;
 
-  // 3. Run the calculations
-  const cppMonthly         = calculateCPP(cppYears, cppStartAge);
-  const oasMonthly         = calculateOAS(oasYears);
+  // 3. Run the calculations (all in nominal/future dollars first)
+  const cppMonthly          = calculateCPP(cppYears, cppStartAge);
+  const oasMonthly          = calculateOAS(oasYears);
   const savingsAtRetirement = calculateSavingsAtRetirement(
     currentSavings, monthlyContrib, returnRate, yearsToRetirement
   );
-  const savingsMonthly     = calculateMonthlyWithdrawal(savingsAtRetirement, returnRate, withdrawalYears);
-  const totalMonthly       = cppMonthly + oasMonthly + savingsMonthly;
-  const totalAnnual        = totalMonthly * 12;
+  const savingsMonthly      = calculateMonthlyWithdrawal(savingsAtRetirement, returnRate, withdrawalYears);
+  const totalMonthly        = cppMonthly + oasMonthly + savingsMonthly;
+  const totalAnnual         = totalMonthly * 12;
 
-  // 4. Display the results
-  // We find each result element by its ID and set its text content.
-  document.getElementById("cpp-result").textContent           = formatCurrency(cppMonthly);
-  document.getElementById("oas-result").textContent           = formatCurrency(oasMonthly);
-  document.getElementById("savings-result").textContent       = formatCurrency(savingsAtRetirement);
-  document.getElementById("savings-monthly-result").textContent = formatCurrency(savingsMonthly);
-  document.getElementById("total-result").textContent         = formatCurrency(totalMonthly);
-  document.getElementById("annual-result").textContent        = formatCurrency(totalAnnual);
+  // 4. Apply inflation adjustment if the toggle is on
+  // We show the user either real (today's purchasing power) or nominal amounts.
+  let displayCpp     = cppMonthly;
+  let displayOas     = oasMonthly;
+  let displaySavings = savingsAtRetirement;
+  let displaySavingsMonthly = savingsMonthly;
+  let displayTotal   = totalMonthly;
+  let displayAnnual  = totalAnnual;
 
-  // 5. Show the results section (it starts hidden)
-  // We remove the "hidden" CSS class to make it visible.
+  if (showRealDollars && inflationRate > 0) {
+    // Convert each amount from "future dollars" to "today's dollars"
+    displayCpp            = toRealDollars(cppMonthly, inflationRate, yearsToRetirement);
+    displayOas            = toRealDollars(oasMonthly, inflationRate, yearsToRetirement);
+    displaySavings        = toRealDollars(savingsAtRetirement, inflationRate, yearsToRetirement);
+    displaySavingsMonthly = toRealDollars(savingsMonthly, inflationRate, yearsToRetirement);
+    displayTotal          = toRealDollars(totalMonthly, inflationRate, yearsToRetirement);
+    displayAnnual         = toRealDollars(totalAnnual, inflationRate, yearsToRetirement);
+  }
+
+  // 5. Display the results
+  document.getElementById("cpp-result").textContent              = formatCurrency(displayCpp);
+  document.getElementById("oas-result").textContent              = formatCurrency(displayOas);
+  document.getElementById("savings-result").textContent          = formatCurrency(displaySavings);
+  document.getElementById("savings-monthly-result").textContent  = formatCurrency(displaySavingsMonthly);
+  document.getElementById("total-result").textContent            = formatCurrency(displayTotal);
+  document.getElementById("annual-result").textContent           = formatCurrency(displayAnnual);
+
+  // 6. Show a context line so the user knows what mode they're in
+  const contextEl = document.getElementById("results-context");
+  if (showRealDollars && inflationRate > 0) {
+    contextEl.textContent = `Showing in today's dollars (adjusted for ${inflationRate}% annual inflation over ${yearsToRetirement} years).`;
+  } else {
+    contextEl.textContent = `Showing in future (nominal) dollars at retirement age ${retirementAge}.`;
+  }
+
+  // 7. Show the "nominal vs real" comparison note when in real-dollars mode
+  const inflationNote = document.getElementById("inflation-note");
+  if (showRealDollars && inflationRate > 0) {
+    document.getElementById("nominal-total-result").textContent = formatCurrency(totalMonthly);
+    inflationNote.classList.remove("hidden");
+  } else {
+    inflationNote.classList.add("hidden");
+  }
+
+  // 8. Show the results section
   const resultsDiv = document.getElementById("results");
   resultsDiv.classList.remove("hidden");
-
-  // Smoothly scroll down to the results so the user sees them
   resultsDiv.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 

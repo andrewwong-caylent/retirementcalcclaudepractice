@@ -202,6 +202,104 @@ select:focus {
 }
 
 /* =========================================
+   TOGGLE SWITCH
+   The on/off switch for "show real dollars"
+   This is pure CSS - no images needed
+   ========================================= */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.toggle-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #2d3748;
+}
+
+/* The outer label acts as the clickable container */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* Hide the actual checkbox - we style the slider instead */
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The track (background bar) */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #cbd5e0;
+  border-radius: 26px;
+  transition: background-color 0.2s;
+}
+
+/* The circle that slides */
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+/* When checked: turn track red and slide the circle right */
+.toggle input:checked + .slider {
+  background-color: #c8102e;
+}
+
+.toggle input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
+/* =========================================
+   INFLATION NOTE (below results grid)
+   ========================================= */
+.inflation-note {
+  background: #fffbeb;
+  border: 1.5px solid #f6e05e;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.88rem;
+  color: #744210;
+  line-height: 1.5;
+}
+
+.inflation-value {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0.25rem;
+}
+
+/* =========================================
+   RESULTS CONTEXT LINE
+   e.g. "Showing amounts in today's dollars"
+   ========================================= */
+.results-context {
+  font-size: 0.82rem;
+  color: #718096;
+  margin-bottom: 0.75rem;
+  font-style: italic;
+}
+
+/* =========================================
    RESPONSIVE: MOBILE ADJUSTMENTS
    "max-width: 480px" means these styles only
    apply when the screen is 480px wide or less
