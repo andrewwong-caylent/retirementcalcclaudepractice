@@ -300,6 +300,28 @@ select:focus {
 }
 
 /* =========================================
+   SAVINGS GROWTH CHART
+   ========================================= */
+.chart-container {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1.5px solid #e2e8f0;
+}
+
+.chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+/* canvas needs a max-height or it can grow too tall on desktop */
+#savings-chart {
+  max-height: 280px;
+  margin-top: 0.75rem;
+}
+
+/* =========================================
    RESPONSIVE: MOBILE ADJUSTMENTS
    "max-width: 480px" means these styles only
    apply when the screen is 480px wide or less

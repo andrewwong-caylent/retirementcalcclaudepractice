@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Canadian Retirement Calculator</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js loaded from CDN - no install needed, just this one line -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -158,6 +160,14 @@
         <span class="inflation-label">In future (nominal) dollars this is</span>
         <span class="inflation-value" id="nominal-total-result">-</span>
         <span class="inflation-label">per month — inflation makes it look bigger, but it buys the same amount.</span>
+      </div>
+
+      <!-- SAVINGS GROWTH CHART -->
+      <!-- "canvas" is an HTML element that JavaScript can draw graphics onto -->
+      <div class="chart-container">
+        <h3 class="chart-title">Savings Growth Over Time</h3>
+        <p class="hint">How your savings balance grows between now and retirement, year by year.</p>
+        <canvas id="savings-chart"></canvas>
       </div>
 
       <p class="disclaimer">These are estimates only. Consult a financial advisor for personalized advice. CPP and OAS amounts are based on 2024 figures and will change with inflation.</p>
