@@ -232,6 +232,143 @@ function calculate() {
   const resultsDiv = document.getElementById("results");
   resultsDiv.classList.remove("hidden");
   resultsDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // 9. Render the savings growth chart
+  renderChart(currentAge, currentSavings, monthlyContrib, returnRate, yearsToRetirement, inflationRate, showRealDollars);
+}
+
+
+// --- CHART ---
+// We store the Chart.js instance here so we can destroy it before redrawing.
+// If we didn't destroy it first, clicking Calculate multiple times would
+// stack charts on top of each other and cause visual glitches.
+let savingsChartInstance = null;
+
+// Builds the year-by-year data for the chart.
+// Returns two arrays:
+//   labels        - ["Age 35", "Age 36", ...]
+//   balanceData   - [52500, 55200, ...] (savings balance each year)
+function buildChartData(currentAge, currentSavings, monthlyContrib, returnRate, yearsToRetirement, inflationRate, showRealDollars) {
+  const labels  = [];
+  const balanceData = [];
+  const contribData = [];  // Cumulative contributions (no growth) - for comparison
+
+  const monthlyRate = returnRate / 100 / 12;
+  let balance = currentSavings;
+  let totalContributed = currentSavings;  // Seed contributions with starting balance
+
+  for (let year = 0; year <= yearsToRetirement; year++) {
+    const age = currentAge + year;
+    labels.push(`Age ${age}`);
+
+    // Optionally convert to today's dollars for the chart too
+    const displayBalance = showRealDollars && inflationRate > 0
+      ? toRealDollars(balance, inflationRate, year)
+      : balance;
+
+    const displayContrib = showRealDollars && inflationRate > 0
+      ? toRealDollars(totalContributed, inflationRate, year)
+      : totalContributed;
+
+    balanceData.push(Math.round(displayBalance));
+    contribData.push(Math.round(displayContrib));
+
+    // Grow balance by one year of compounding + contributions
+    // (we do this after recording the current year's value)
+    if (monthlyRate === 0) {
+      balance += monthlyContrib * 12;
+    } else {
+      // Compound for 12 months
+      const growthFactor = Math.pow(1 + monthlyRate, 12);
+      balance = balance * growthFactor + monthlyContrib * ((growthFactor - 1) / monthlyRate);
+    }
+    totalContributed += monthlyContrib * 12;
+  }
+
+  return { labels, balanceData, contribData };
+}
+
+function renderChart(currentAge, currentSavings, monthlyContrib, returnRate, yearsToRetirement, inflationRate, showRealDollars) {
+  const { labels, balanceData, contribData } = buildChartData(
+    currentAge, currentSavings, monthlyContrib, returnRate, yearsToRetirement, inflationRate, showRealDollars
+  );
+
+  // Destroy the old chart if one exists, so we start fresh
+  if (savingsChartInstance) {
+    savingsChartInstance.destroy();
+  }
+
+  // Get the canvas element where the chart will be drawn
+  const ctx = document.getElementById("savings-chart").getContext("2d");
+
+  // Create the chart using Chart.js
+  // Chart.js takes a config object that describes the type, data, and appearance.
+  savingsChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          // Total balance including investment growth
+          label: showRealDollars ? "Total Balance (today's $)" : "Total Balance",
+          data: balanceData,
+          borderColor: "#c8102e",
+          backgroundColor: "rgba(200, 16, 46, 0.08)",
+          fill: true,
+          tension: 0.3,      // Makes the line slightly curved
+          pointRadius: 2,
+        },
+        {
+          // Just contributions with no growth - shows how much compounding adds
+          label: "Contributions Only (no growth)",
+          data: contribData,
+          borderColor: "#a0aec0",
+          backgroundColor: "transparent",
+          fill: false,
+          tension: 0.3,
+          borderDash: [5, 5],  // Dashed line
+          pointRadius: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      interaction: {
+        mode: "index",       // Show both datasets' values when hovering
+        intersect: false,
+      },
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { font: { size: 11 } },
+        },
+        tooltip: {
+          callbacks: {
+            // Format tooltip values as currency
+            label: (context) => {
+              const value = context.parsed.y;
+              return ` ${context.dataset.label}: ${new Intl.NumberFormat("en-CA", {
+                style: "currency", currency: "CAD", maximumFractionDigits: 0
+              }).format(value)}`;
+            },
+          },
+        },
+      },
+      scales: {
+        y: {
+          ticks: {
+            // Format Y axis labels as abbreviated dollar amounts: $500K, $1M
+            callback: (value) => {
+              if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+              if (value >= 1_000)    return `$${(value / 1_000).toFixed(0)}K`;
+              return `$${value}`;
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 
