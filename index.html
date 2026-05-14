@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- This makes the page look correct on mobile phones -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Canadian Retirement Calculator</title>
   <link rel="stylesheet" href="style.css" />
@@ -29,6 +28,12 @@
         <div class="field">
           <label for="retirement-age">Retirement Age</label>
           <input type="number" id="retirement-age" min="55" max="75" value="65" />
+        </div>
+
+        <div class="field">
+          <label for="withdrawal-years">Years in Retirement</label>
+          <input type="number" id="withdrawal-years" min="1" max="50" value="25" />
+          <span class="hint">How many years will your savings need to last? Used to calculate monthly withdrawals.</span>
         </div>
 
         <div class="field">
@@ -72,29 +77,84 @@
 
       <!-- SECTION 4: Personal Savings -->
       <section class="card">
-        <h2>Personal Savings (RRSP / TFSA)</h2>
-        <p class="hint">Money you've saved yourself in registered accounts.</p>
+        <h2>Personal Savings</h2>
+        <p class="hint">Enter your current balance and monthly contribution for each account type you have. Leave at 0 for accounts you don't use.</p>
 
-        <div class="field">
-          <label for="current-savings">Current Savings Balance ($)</label>
-          <input type="number" id="current-savings" min="0" value="50000" />
-        </div>
+        <!-- 2-column grid of account cards -->
+        <div class="accounts-grid">
 
-        <div class="field">
-          <label for="monthly-contribution">Monthly Contribution ($)</label>
-          <input type="number" id="monthly-contribution" min="0" value="500" />
-        </div>
+          <!-- RRSP -->
+          <div class="account-card account-rrsp">
+            <h3 class="account-title">RRSP</h3>
+            <p class="hint">Registered Retirement Savings Plan. Contributions are tax-deductible; withdrawals are taxed as income.</p>
+            <div class="field">
+              <label for="rrsp-balance">Current Balance ($)</label>
+              <input type="number" id="rrsp-balance" min="0" value="50000" />
+            </div>
+            <div class="field">
+              <label for="rrsp-contribution">Monthly Contribution ($)</label>
+              <input type="number" id="rrsp-contribution" min="0" value="500" />
+            </div>
+            <div class="field">
+              <label for="rrsp-return">Expected Annual Return (%)</label>
+              <input type="number" id="rrsp-return" min="0" max="20" step="0.5" value="5" />
+            </div>
+          </div>
 
-        <div class="field">
-          <label for="return-rate">Expected Annual Return (%)</label>
-          <input type="number" id="return-rate" min="0" max="20" step="0.5" value="5" />
-          <span class="hint">A balanced portfolio has historically returned ~5-7% per year.</span>
-        </div>
+          <!-- TFSA -->
+          <div class="account-card account-tfsa">
+            <h3 class="account-title">TFSA</h3>
+            <p class="hint">Tax-Free Savings Account. Contributions are not tax-deductible, but growth and withdrawals are tax-free.</p>
+            <div class="field">
+              <label for="tfsa-balance">Current Balance ($)</label>
+              <input type="number" id="tfsa-balance" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="tfsa-contribution">Monthly Contribution ($)</label>
+              <input type="number" id="tfsa-contribution" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="tfsa-return">Expected Annual Return (%)</label>
+              <input type="number" id="tfsa-return" min="0" max="20" step="0.5" value="5" />
+            </div>
+          </div>
 
-        <div class="field">
-          <label for="withdrawal-years">Years in Retirement</label>
-          <input type="number" id="withdrawal-years" min="1" max="50" value="25" />
-          <span class="hint">How many years will your savings need to last?</span>
+          <!-- Non-Registered -->
+          <div class="account-card account-nonreg">
+            <h3 class="account-title">Non-Registered</h3>
+            <p class="hint">Regular investment account. No contribution limits, but investment gains are taxable each year.</p>
+            <div class="field">
+              <label for="nonreg-balance">Current Balance ($)</label>
+              <input type="number" id="nonreg-balance" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="nonreg-contribution">Monthly Contribution ($)</label>
+              <input type="number" id="nonreg-contribution" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="nonreg-return">Expected Annual Return (%)</label>
+              <input type="number" id="nonreg-return" min="0" max="20" step="0.5" value="5" />
+            </div>
+          </div>
+
+          <!-- Cash Savings -->
+          <div class="account-card account-cash">
+            <h3 class="account-title">Cash Savings</h3>
+            <p class="hint">Savings account, GICs, or cash. Lower risk and lower return than investments.</p>
+            <div class="field">
+              <label for="cash-balance">Current Balance ($)</label>
+              <input type="number" id="cash-balance" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="cash-contribution">Monthly Contribution ($)</label>
+              <input type="number" id="cash-contribution" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="cash-return">Expected Annual Return (%)</label>
+              <input type="number" id="cash-return" min="0" max="20" step="0.5" value="2" />
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -128,6 +188,29 @@
       <h2>Your Retirement Estimate</h2>
       <p id="results-context" class="results-context"></p>
 
+      <!-- Per-account breakdown -->
+      <h3 class="section-subheading">Savings at Retirement by Account</h3>
+      <div class="breakdown-grid">
+        <div class="breakdown-item breakdown-rrsp">
+          <span class="breakdown-label">RRSP</span>
+          <span class="breakdown-value" id="rrsp-result">-</span>
+        </div>
+        <div class="breakdown-item breakdown-tfsa">
+          <span class="breakdown-label">TFSA</span>
+          <span class="breakdown-value" id="tfsa-result">-</span>
+        </div>
+        <div class="breakdown-item breakdown-nonreg">
+          <span class="breakdown-label">Non-Registered</span>
+          <span class="breakdown-value" id="nonreg-result">-</span>
+        </div>
+        <div class="breakdown-item breakdown-cash">
+          <span class="breakdown-label">Cash Savings</span>
+          <span class="breakdown-value" id="cash-result">-</span>
+        </div>
+      </div>
+
+      <!-- Combined totals -->
+      <h3 class="section-subheading">Monthly Income at Retirement</h3>
       <div class="result-grid">
         <div class="result-item">
           <span class="result-label">CPP Monthly</span>
@@ -138,7 +221,7 @@
           <span class="result-value" id="oas-result">-</span>
         </div>
         <div class="result-item">
-          <span class="result-label">Savings at Retirement</span>
+          <span class="result-label">Total Savings</span>
           <span class="result-value" id="savings-result">-</span>
         </div>
         <div class="result-item">
@@ -155,7 +238,7 @@
         </div>
       </div>
 
-      <!-- Inflation comparison row - only shown when inflation is enabled -->
+      <!-- Inflation comparison row -->
       <div id="inflation-note" class="inflation-note hidden">
         <span class="inflation-label">In future (nominal) dollars this is</span>
         <span class="inflation-value" id="nominal-total-result">-</span>
@@ -163,10 +246,9 @@
       </div>
 
       <!-- SAVINGS GROWTH CHART -->
-      <!-- "canvas" is an HTML element that JavaScript can draw graphics onto -->
       <div class="chart-container">
         <h3 class="chart-title">Savings Growth Over Time</h3>
-        <p class="hint">How your savings balance grows between now and retirement, year by year.</p>
+        <p class="hint">How your combined savings balance grows between now and retirement, year by year.</p>
         <canvas id="savings-chart"></canvas>
       </div>
 

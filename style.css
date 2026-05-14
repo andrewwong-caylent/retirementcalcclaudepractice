@@ -26,7 +26,7 @@ body {
    on a desktop monitor
    ========================================= */
 .container {
-  max-width: 680px;
+  max-width: 860px;
   margin: 0 auto;         /* auto left/right margin = centered */
   padding: 1.5rem 1rem;
 }
@@ -322,21 +322,89 @@ select:focus {
 }
 
 /* =========================================
-   RESPONSIVE: MOBILE ADJUSTMENTS
-   "max-width: 480px" means these styles only
-   apply when the screen is 480px wide or less
-   (i.e., a phone)
+   ACCOUNTS GRID
+   2-column layout for the 4 account cards
+   inside the Personal Savings section
    ========================================= */
-@media (max-width: 480px) {
-  h1 {
-    font-size: 1.4rem;
-  }
-
-  .result-grid {
-    grid-template-columns: 1fr;  /* Single column on small phones */
-  }
-
-  .card {
-    padding: 1rem;
-  }
+.accounts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.75rem;
 }
+
+/* Each account card sits inside the grid */
+.account-card {
+  background: #f7fafc;
+  border-radius: 10px;
+  padding: 1rem;
+  border-left: 4px solid #cbd5e0;  /* Overridden per account below */
+}
+
+.account-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+/* Colour coding: each account type gets its own accent colour on the left border */
+.account-rrsp   { border-left-color: #4a6fa5; }   /* Blue-grey  */
+.account-tfsa   { border-left-color: #38a169; }   /* Green      */
+.account-nonreg { border-left-color: #dd6b20; }   /* Orange     */
+.account-cash   { border-left-color: #718096; }   /* Grey       */
+
+/* =========================================
+   SECTION SUBHEADINGS (inside results)
+   ========================================= */
+.section-subheading {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 1.25rem 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* =========================================
+   BREAKDOWN GRID
+   4 boxes showing each account's balance
+   at retirement, above the income summary
+   ========================================= */
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.breakdown-item {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  text-align: center;
+  border-top: 3px solid #cbd5e0;  /* Overridden per account below */
+}
+
+/* Match the same accent colours used on the input cards */
+.breakdown-rrsp   { border-top-color: #4a6fa5; }
+.breakdown-tfsa   { border-top-color: #38a169; }
+.breakdown-nonreg { border-top-color: #dd6b20; }
+.breakdown-cash   { border-top-color: #718096; }
+
+.breakdown-label {
+  display: block;
+  font-size: 0.72rem;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.breakdown-value {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
