@@ -68,7 +68,7 @@ body {
    ========================================= */
 
 .container {
-  max-width: 860px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 1.5rem 1rem;
 }
@@ -196,7 +196,7 @@ select:focus {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .result-grid {
@@ -507,6 +507,14 @@ select:focus {
   padding: 0.75rem 0;
 }
 
+/* Category colour dot */
+.budget-cat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .budget-row-label {
   flex: 1;
   font-weight: 600;
@@ -544,15 +552,20 @@ select:focus {
   transform: rotate(180deg);
 }
 
-/* Sub-items panel: indented 2-column grid */
+/* Sub-items panel: indented 2-column grid
+   IMPORTANT: use display:grid here but combine with [hidden] override */
 .budget-subitems {
-  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem 1rem;
   padding: 0.5rem 0 0.75rem 1rem;
   border-left: 3px solid #e2e8f0;
   margin-left: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+/* Only apply grid when NOT hidden */
+.budget-subitems:not([hidden]) {
+  display: grid;
 }
 
 .budget-subitem label {
@@ -573,9 +586,10 @@ select:focus {
   display: flex;
   justify-content: flex-end;
   gap: 2.5rem;
-  padding-top: 1rem;
+  padding: 1rem 0 0;
   margin-top: 0.75rem;
   border-top: 2px solid #e2e8f0;
+  flex-wrap: wrap;
 }
 
 .budget-total-block {
@@ -595,7 +609,75 @@ select:focus {
   display: block;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #c8102e;
+  color: #2d3748;
+}
+
+/* Budget charts row */
+.budget-charts-row {
+  margin-bottom: 1rem;
+}
+
+.budget-charts-row .card canvas {
+  max-height: 320px;
+  margin-top: 0.75rem;
+}
+
+/* =========================================
+   INSIGHT CARDS (shared across tabs)
+   ========================================= */
+
+.insight-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.65rem;
+  border-left: 4px solid transparent;
+}
+
+.insight-card:last-child {
+  margin-bottom: 0;
+}
+
+.insight-green {
+  background: #f0fff4;
+  border-left-color: #38a169;
+}
+
+.insight-yellow {
+  background: #fffbeb;
+  border-left-color: #d69e2e;
+}
+
+.insight-red {
+  background: #fff5f5;
+  border-left-color: #e53e3e;
+}
+
+.insight-blue {
+  background: #ebf8ff;
+  border-left-color: #3182ce;
+}
+
+.insight-icon {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.insight-title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.2rem;
+}
+
+.insight-body {
+  font-size: 0.85rem;
+  color: #4a5568;
+  line-height: 1.5;
 }
 
 /* =========================================
@@ -605,12 +687,36 @@ select:focus {
 .dashboard-empty {
   background: white;
   border-radius: 12px;
-  padding: 2.5rem 1.5rem;
+  padding: 3rem 1.5rem;
   text-align: center;
   color: #718096;
-  font-size: 0.95rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   margin-top: 0.5rem;
+}
+
+.dashboard-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.dashboard-empty h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  border: none;
+  padding: 0;
+}
+
+.dashboard-empty p {
+  font-size: 0.95rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Insights section at top */
+.dashboard-insights-section {
+  margin-bottom: 0.5rem;
 }
 
 .dashboard-section-heading {
@@ -664,13 +770,20 @@ select:focus {
   justify-content: center;
 }
 
+/* Stat value — neutral dark by default */
 .dash-stat-value {
   display: block;
   font-size: 1.6rem;
   font-weight: 700;
-  color: #c8102e;
+  color: #2d3748;
   margin-bottom: 0.15rem;
 }
+
+/* Semantic colour modifiers — applied in JS */
+.dash-green  { color: #38a169 !important; }
+.dash-yellow { color: #d69e2e !important; }
+.dash-red    { color: #e53e3e !important; }
+.dash-neutral { color: #2d3748 !important; }
 
 .dash-stat-label {
   display: block;
@@ -690,6 +803,29 @@ select:focus {
 
 .dashboard-income-tile {
   text-align: center;
+}
+
+/* Charts row: income bar + spending doughnut side by side */
+.dashboard-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.dashboard-charts-row canvas {
+  max-height: 220px;
+  margin-top: 0.75rem;
+}
+
+.chart-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  color: #a0aec0;
+  font-size: 0.9rem;
+  font-style: italic;
 }
 
 /* Row 3: Budget vs Goal + Savings Rate */
@@ -721,5 +857,10 @@ select:focus {
 }
 
 .key-facts-list li strong {
-  color: #c8102e;
+  color: #2d3748;
 }
+
+/* Semantic colours for key facts */
+.fact-green  { color: #38a169 !important; }
+.fact-yellow { color: #d69e2e !important; }
+.fact-red    { color: #e53e3e !important; }

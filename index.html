@@ -26,11 +26,16 @@
 
       <!-- Empty state — shown when no retirement data entered yet -->
       <div id="dashboard-empty" class="dashboard-empty">
-        <p>Fill in the <strong>Retirement Calculator</strong> tab to see your personalized summary here.</p>
+        <div class="dashboard-empty-icon">&#128200;</div>
+        <h2>Get Your Retirement Picture</h2>
+        <p>Fill in the <strong>Retirement Calculator</strong> tab to see your personalized summary, insights, and charts here.</p>
       </div>
 
       <!-- Populated state — hidden until data is available -->
       <div id="dashboard-content" class="dashboard-content hidden">
+
+        <!-- INSIGHTS SECTION — at the top -->
+        <div id="dashboard-insights" class="dashboard-insights-section"></div>
 
         <!-- Row 1: Readiness + Gap/Surplus -->
         <div class="dashboard-top-row">
@@ -49,35 +54,50 @@
         </div>
 
         <!-- Row 2: Income breakdown -->
-        <p class="dashboard-section-heading">Income at Retirement</p>
+        <p class="dashboard-section-heading">Projected Income at Retirement</p>
         <div class="dashboard-income-row">
           <div class="card dashboard-income-tile">
-            <span class="dash-stat-value" id="dash-cpp">—</span>
+            <span class="dash-stat-value dash-neutral" id="dash-cpp">—</span>
             <span class="dash-stat-label">CPP Monthly</span>
           </div>
           <div class="card dashboard-income-tile">
-            <span class="dash-stat-value" id="dash-oas">—</span>
+            <span class="dash-stat-value dash-neutral" id="dash-oas">—</span>
             <span class="dash-stat-label">OAS Monthly</span>
           </div>
           <div class="card dashboard-income-tile">
-            <span class="dash-stat-value" id="dash-savings-monthly">—</span>
+            <span class="dash-stat-value dash-neutral" id="dash-savings-monthly">—</span>
             <span class="dash-stat-label">From Savings Monthly</span>
           </div>
           <div class="card dashboard-income-tile">
-            <span class="dash-stat-value" id="dash-total-monthly">—</span>
+            <span class="dash-stat-value dash-neutral" id="dash-total-monthly">—</span>
             <span class="dash-stat-label">Total Monthly Income</span>
+          </div>
+        </div>
+
+        <!-- Charts row: Income bar chart + Spending pie chart -->
+        <div class="dashboard-charts-row">
+          <div class="card">
+            <h3 class="chart-title">Income at Retirement</h3>
+            <p class="hint">Breakdown of your projected monthly retirement income.</p>
+            <canvas id="retirement-income-chart"></canvas>
+          </div>
+          <div class="card" id="dashboard-spending-chart-card">
+            <h3 class="chart-title">Current Monthly Spend</h3>
+            <p class="hint" id="dash-spending-chart-hint">Enter your budget in the Budget tab to see your spending breakdown.</p>
+            <canvas id="dashboard-spending-chart" style="display:none"></canvas>
+            <div id="dashboard-spending-empty" class="chart-empty-state">No budget data yet</div>
           </div>
         </div>
 
         <!-- Row 3: Budget vs Goal + Savings Rate -->
         <div class="dashboard-mid-row">
           <div class="card dashboard-stat">
-            <span class="dash-stat-value" id="dash-budget-spend">—</span>
+            <span class="dash-stat-value dash-neutral" id="dash-budget-spend">—</span>
             <span class="dash-stat-label">Current Monthly Spend</span>
             <span class="hint" id="dash-budget-hint">Enter budget in the Budget tab</span>
           </div>
           <div class="card dashboard-stat">
-            <span class="dash-stat-value" id="dash-savings-rate">—</span>
+            <span class="dash-stat-value dash-neutral" id="dash-savings-rate">—</span>
             <span class="dash-stat-label">Current Savings Rate</span>
             <span class="hint">Monthly contributions ÷ monthly income</span>
           </div>
@@ -110,6 +130,7 @@
           <!-- HOUSING -->
           <div class="budget-row" data-category="housing">
             <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#3b82f6"></span>
               <span class="budget-row-label">Housing</span>
               <input type="number" class="budget-cat-input" id="budget-total-housing" min="0" value="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Housing">
@@ -139,6 +160,7 @@
           <!-- FOOD -->
           <div class="budget-row" data-category="food">
             <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#22c55e"></span>
               <span class="budget-row-label">Food</span>
               <input type="number" class="budget-cat-input" id="budget-total-food" min="0" value="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Food">
@@ -164,6 +186,7 @@
           <!-- TRANSPORT -->
           <div class="budget-row" data-category="transport">
             <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#f97316"></span>
               <span class="budget-row-label">Transport</span>
               <input type="number" class="budget-cat-input" id="budget-total-transport" min="0" value="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Transport">
@@ -197,6 +220,7 @@
           <!-- HEALTH -->
           <div class="budget-row" data-category="health">
             <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#06b6d4"></span>
               <span class="budget-row-label">Health</span>
               <input type="number" class="budget-cat-input" id="budget-total-health" min="0" value="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Health">
@@ -226,6 +250,7 @@
           <!-- PERSONAL -->
           <div class="budget-row" data-category="personal">
             <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#8b5cf6"></span>
               <span class="budget-row-label">Personal</span>
               <input type="number" class="budget-cat-input" id="budget-total-personal" min="0" value="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Personal">
@@ -251,6 +276,7 @@
           <!-- ENTERTAINMENT -->
           <div class="budget-row" data-category="entertainment">
             <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#ec4899"></span>
               <span class="budget-row-label">Entertainment</span>
               <input type="number" class="budget-cat-input" id="budget-total-entertainment" min="0" value="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Entertainment">
@@ -280,6 +306,7 @@
           <!-- FAMILY -->
           <div class="budget-row" data-category="family">
             <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#eab308"></span>
               <span class="budget-row-label">Family</span>
               <input type="number" class="budget-cat-input" id="budget-total-family" min="0" value="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Family">
@@ -309,6 +336,7 @@
           <!-- OTHER -->
           <div class="budget-row" data-category="other">
             <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#94a3b8"></span>
               <span class="budget-row-label">Other</span>
               <input type="number" class="budget-cat-input" id="budget-total-other" min="0" value="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Other">
@@ -342,6 +370,26 @@
         </div>
 
       </div><!-- /card -->
+
+      <!-- Budget Charts + Insights — shown once any spend is entered -->
+      <div id="budget-visuals" class="hidden">
+
+        <div class="budget-charts-row">
+          <div class="card">
+            <h3 class="chart-title">Spending Breakdown</h3>
+            <p class="hint">Where your money goes each month.</p>
+            <canvas id="budget-pie-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Spending Insights -->
+        <div class="card" id="budget-insights-card">
+          <h3 class="chart-title">Spending Insights</h3>
+          <div id="budget-insights-list"></div>
+        </div>
+
+      </div>
+
     </div>
   </div>
 
