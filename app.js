@@ -154,17 +154,31 @@ function calculate() {
   // 1. Read all the input values from the form
   const currentAge         = getInput("current-age");
   const retirementAge      = getInput("retirement-age");
+  const withdrawalYears    = getInput("withdrawal-years");
   const annualIncome       = getInput("annual-income");
   const cppYears           = getInput("cpp-years");
   const cppStartAge        = parseInt(document.getElementById("cpp-start-age").value);
   const oasYears           = getInput("oas-years");
-  const currentSavings     = getInput("current-savings");
-  const monthlyContrib     = getInput("monthly-contribution");
-  const returnRate         = getInput("return-rate");
-  const withdrawalYears    = getInput("withdrawal-years");
   const inflationRate      = getInput("inflation-rate");
   // .checked reads whether a checkbox is ticked (true/false)
   const showRealDollars    = document.getElementById("show-real").checked;
+
+  // Read each account's balance, monthly contribution, and return rate
+  const rrspBalance        = getInput("rrsp-balance");
+  const rrspContrib        = getInput("rrsp-contribution");
+  const rrspReturn         = getInput("rrsp-return");
+
+  const tfsaBalance        = getInput("tfsa-balance");
+  const tfsaContrib        = getInput("tfsa-contribution");
+  const tfsaReturn         = getInput("tfsa-return");
+
+  const nonregBalance      = getInput("nonreg-balance");
+  const nonregContrib      = getInput("nonreg-contribution");
+  const nonregReturn       = getInput("nonreg-return");
+
+  const cashBalance        = getInput("cash-balance");
+  const cashContrib        = getInput("cash-contribution");
+  const cashReturn         = getInput("cash-return");
 
   // 2. Basic validation
   if (retirementAge <= currentAge) {
@@ -174,18 +188,44 @@ function calculate() {
 
   const yearsToRetirement = retirementAge - currentAge;
 
-  // 3. Run the calculations (all in nominal/future dollars first)
-  const cppMonthly          = calculateCPP(cppYears, cppStartAge);
-  const oasMonthly          = calculateOAS(oasYears);
-  const savingsAtRetirement = calculateSavingsAtRetirement(
-    currentSavings, monthlyContrib, returnRate, yearsToRetirement
-  );
-  const savingsMonthly      = calculateMonthlyWithdrawal(savingsAtRetirement, returnRate, withdrawalYears);
-  const totalMonthly        = cppMonthly + oasMonthly + savingsMonthly;
-  const totalAnnual         = totalMonthly * 12;
+  // 3. Calculate each account separately at retirement (all in nominal/future dollars)
+  const rrspAtRetirement   = calculateSavingsAtRetirement(rrspBalance,   rrspContrib,   rrspReturn,   yearsToRetirement);
+  const tfsaAtRetirement   = calculateSavingsAtRetirement(tfsaBalance,   tfsaContrib,   tfsaReturn,   yearsToRetirement);
+  const nonregAtRetirement = calculateSavingsAtRetirement(nonregBalance, nonregContrib, nonregReturn, yearsToRetirement);
+  const cashAtRetirement   = calculateSavingsAtRetirement(cashBalance,   cashContrib,   cashReturn,   yearsToRetirement);
 
-  // 4. Apply inflation adjustment if the toggle is on
+  // Total savings = sum of all 4 accounts
+  const savingsAtRetirement = rrspAtRetirement + tfsaAtRetirement + nonregAtRetirement + cashAtRetirement;
+
+  // 4. Weighted average return rate for the withdrawal phase.
+  // If you have $200K in RRSP at 5% and $100K in cash at 2%, your blended
+  // rate is not simply (5+2)/2 = 3.5%. It's weighted by how much is in each account.
+  // This gives a more accurate monthly withdrawal estimate.
+  let weightedReturnRate;
+  if (savingsAtRetirement === 0) {
+    weightedReturnRate = 0;
+  } else {
+    weightedReturnRate = (
+      rrspAtRetirement   * rrspReturn   +
+      tfsaAtRetirement   * tfsaReturn   +
+      nonregAtRetirement * nonregReturn +
+      cashAtRetirement   * cashReturn
+    ) / savingsAtRetirement;
+  }
+
+  // 5. Run the remaining calculations
+  const cppMonthly     = calculateCPP(cppYears, cppStartAge);
+  const oasMonthly     = calculateOAS(oasYears);
+  const savingsMonthly = calculateMonthlyWithdrawal(savingsAtRetirement, weightedReturnRate, withdrawalYears);
+  const totalMonthly   = cppMonthly + oasMonthly + savingsMonthly;
+  const totalAnnual    = totalMonthly * 12;
+
+  // 6. Apply inflation adjustment if the toggle is on
   // We show the user either real (today's purchasing power) or nominal amounts.
+  let displayRrsp    = rrspAtRetirement;
+  let displayTfsa    = tfsaAtRetirement;
+  let displayNonreg  = nonregAtRetirement;
+  let displayCash    = cashAtRetirement;
   let displayCpp     = cppMonthly;
   let displayOas     = oasMonthly;
   let displaySavings = savingsAtRetirement;
@@ -195,15 +235,25 @@ function calculate() {
 
   if (showRealDollars && inflationRate > 0) {
     // Convert each amount from "future dollars" to "today's dollars"
-    displayCpp            = toRealDollars(cppMonthly, inflationRate, yearsToRetirement);
-    displayOas            = toRealDollars(oasMonthly, inflationRate, yearsToRetirement);
+    displayRrsp           = toRealDollars(rrspAtRetirement,   inflationRate, yearsToRetirement);
+    displayTfsa           = toRealDollars(tfsaAtRetirement,   inflationRate, yearsToRetirement);
+    displayNonreg         = toRealDollars(nonregAtRetirement, inflationRate, yearsToRetirement);
+    displayCash           = toRealDollars(cashAtRetirement,   inflationRate, yearsToRetirement);
+    displayCpp            = toRealDollars(cppMonthly,         inflationRate, yearsToRetirement);
+    displayOas            = toRealDollars(oasMonthly,         inflationRate, yearsToRetirement);
     displaySavings        = toRealDollars(savingsAtRetirement, inflationRate, yearsToRetirement);
-    displaySavingsMonthly = toRealDollars(savingsMonthly, inflationRate, yearsToRetirement);
-    displayTotal          = toRealDollars(totalMonthly, inflationRate, yearsToRetirement);
-    displayAnnual         = toRealDollars(totalAnnual, inflationRate, yearsToRetirement);
+    displaySavingsMonthly = toRealDollars(savingsMonthly,     inflationRate, yearsToRetirement);
+    displayTotal          = toRealDollars(totalMonthly,       inflationRate, yearsToRetirement);
+    displayAnnual         = toRealDollars(totalAnnual,        inflationRate, yearsToRetirement);
   }
 
-  // 5. Display the results
+  // 7. Display the per-account breakdown
+  document.getElementById("rrsp-result").textContent   = formatCurrency(displayRrsp);
+  document.getElementById("tfsa-result").textContent   = formatCurrency(displayTfsa);
+  document.getElementById("nonreg-result").textContent = formatCurrency(displayNonreg);
+  document.getElementById("cash-result").textContent   = formatCurrency(displayCash);
+
+  // 8. Display the combined results
   document.getElementById("cpp-result").textContent              = formatCurrency(displayCpp);
   document.getElementById("oas-result").textContent              = formatCurrency(displayOas);
   document.getElementById("savings-result").textContent          = formatCurrency(displaySavings);
@@ -211,7 +261,7 @@ function calculate() {
   document.getElementById("total-result").textContent            = formatCurrency(displayTotal);
   document.getElementById("annual-result").textContent           = formatCurrency(displayAnnual);
 
-  // 6. Show a context line so the user knows what mode they're in
+  // 9. Show a context line so the user knows what mode they're in
   const contextEl = document.getElementById("results-context");
   if (showRealDollars && inflationRate > 0) {
     contextEl.textContent = `Showing in today's dollars (adjusted for ${inflationRate}% annual inflation over ${yearsToRetirement} years).`;
@@ -219,7 +269,7 @@ function calculate() {
     contextEl.textContent = `Showing in future (nominal) dollars at retirement age ${retirementAge}.`;
   }
 
-  // 7. Show the "nominal vs real" comparison note when in real-dollars mode
+  // 10. Show the "nominal vs real" comparison note when in real-dollars mode
   const inflationNote = document.getElementById("inflation-note");
   if (showRealDollars && inflationRate > 0) {
     document.getElementById("nominal-total-result").textContent = formatCurrency(totalMonthly);
@@ -228,13 +278,20 @@ function calculate() {
     inflationNote.classList.add("hidden");
   }
 
-  // 8. Show the results section
+  // 11. Show the results section
   const resultsDiv = document.getElementById("results");
   resultsDiv.classList.remove("hidden");
   resultsDiv.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  // 9. Render the savings growth chart
-  renderChart(currentAge, currentSavings, monthlyContrib, returnRate, yearsToRetirement, inflationRate, showRealDollars);
+  // 12. Render the savings growth chart
+  // Pass all 4 accounts so the chart can show their combined growth
+  renderChart(
+    currentAge, yearsToRetirement, inflationRate, showRealDollars,
+    { balance: rrspBalance,   contrib: rrspContrib,   rate: rrspReturn   },
+    { balance: tfsaBalance,   contrib: tfsaContrib,   rate: tfsaReturn   },
+    { balance: nonregBalance, contrib: nonregContrib, rate: nonregReturn },
+    { balance: cashBalance,   contrib: cashContrib,   rate: cashReturn   }
+  );
 }
 
 
@@ -245,26 +302,39 @@ function calculate() {
 let savingsChartInstance = null;
 
 // Builds the year-by-year data for the chart.
-// Returns two arrays:
-//   labels        - ["Age 35", "Age 36", ...]
-//   balanceData   - [52500, 55200, ...] (savings balance each year)
-function buildChartData(currentAge, currentSavings, monthlyContrib, returnRate, yearsToRetirement, inflationRate, showRealDollars) {
-  const labels  = [];
+// Now accepts 4 account objects instead of a single savings amount.
+// Each account grows independently at its own rate; we sum them each year.
+function buildChartData(currentAge, yearsToRetirement, inflationRate, showRealDollars, rrsp, tfsa, nonreg, cash) {
+  const labels      = [];
   const balanceData = [];
   const contribData = [];  // Cumulative contributions (no growth) - for comparison
 
-  const monthlyRate = returnRate / 100 / 12;
-  let balance = currentSavings;
-  let totalContributed = currentSavings;  // Seed contributions with starting balance
+  // Track the current balance for each account as we step through years
+  let rrspBal   = rrsp.balance;
+  let tfsaBal   = tfsa.balance;
+  let nonregBal = nonreg.balance;
+  let cashBal   = cash.balance;
+
+  // Track total contributed (no growth) across all accounts
+  let totalContributed = rrsp.balance + tfsa.balance + nonreg.balance + cash.balance;
+
+  // Monthly rates for each account
+  const rrspRate   = rrsp.rate   / 100 / 12;
+  const tfsaRate   = tfsa.rate   / 100 / 12;
+  const nonregRate = nonreg.rate / 100 / 12;
+  const cashRate   = cash.rate   / 100 / 12;
 
   for (let year = 0; year <= yearsToRetirement; year++) {
     const age = currentAge + year;
     labels.push(`Age ${age}`);
 
+    // Combined balance this year
+    const combinedBalance = rrspBal + tfsaBal + nonregBal + cashBal;
+
     // Optionally convert to today's dollars for the chart too
     const displayBalance = showRealDollars && inflationRate > 0
-      ? toRealDollars(balance, inflationRate, year)
-      : balance;
+      ? toRealDollars(combinedBalance, inflationRate, year)
+      : combinedBalance;
 
     const displayContrib = showRealDollars && inflationRate > 0
       ? toRealDollars(totalContributed, inflationRate, year)
@@ -273,24 +343,30 @@ function buildChartData(currentAge, currentSavings, monthlyContrib, returnRate, 
     balanceData.push(Math.round(displayBalance));
     contribData.push(Math.round(displayContrib));
 
-    // Grow balance by one year of compounding + contributions
+    // Grow each account by one year at its own rate
     // (we do this after recording the current year's value)
-    if (monthlyRate === 0) {
-      balance += monthlyContrib * 12;
-    } else {
-      // Compound for 12 months
-      const growthFactor = Math.pow(1 + monthlyRate, 12);
-      balance = balance * growthFactor + monthlyContrib * ((growthFactor - 1) / monthlyRate);
+    function growOneYear(balance, contrib, monthlyRate) {
+      if (monthlyRate === 0) {
+        return balance + contrib * 12;
+      }
+      const gf = Math.pow(1 + monthlyRate, 12);
+      return balance * gf + contrib * ((gf - 1) / monthlyRate);
     }
-    totalContributed += monthlyContrib * 12;
+
+    rrspBal   = growOneYear(rrspBal,   rrsp.contrib,   rrspRate);
+    tfsaBal   = growOneYear(tfsaBal,   tfsa.contrib,   tfsaRate);
+    nonregBal = growOneYear(nonregBal, nonreg.contrib, nonregRate);
+    cashBal   = growOneYear(cashBal,   cash.contrib,   cashRate);
+
+    totalContributed += (rrsp.contrib + tfsa.contrib + nonreg.contrib + cash.contrib) * 12;
   }
 
   return { labels, balanceData, contribData };
 }
 
-function renderChart(currentAge, currentSavings, monthlyContrib, returnRate, yearsToRetirement, inflationRate, showRealDollars) {
+function renderChart(currentAge, yearsToRetirement, inflationRate, showRealDollars, rrsp, tfsa, nonreg, cash) {
   const { labels, balanceData, contribData } = buildChartData(
-    currentAge, currentSavings, monthlyContrib, returnRate, yearsToRetirement, inflationRate, showRealDollars
+    currentAge, yearsToRetirement, inflationRate, showRealDollars, rrsp, tfsa, nonreg, cash
   );
 
   // Destroy the old chart if one exists, so we start fresh
