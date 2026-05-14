@@ -5,257 +5,618 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Canadian Retirement Calculator</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Chart.js loaded from CDN - no install needed, just this one line -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
-  <div class="container">
-    <h1>Canadian Retirement Calculator</h1>
-    <p class="subtitle">Estimate your retirement income from CPP, OAS, and personal savings.</p>
+  <!-- STICKY TAB BAR -->
+  <nav class="tab-bar" role="tablist" aria-label="App sections">
+    <button class="tab-btn tab-btn--active" role="tab" aria-selected="true"  data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn"                 role="tab" aria-selected="false" data-tab="budget">Budget</button>
+    <button class="tab-btn"                 role="tab" aria-selected="false" data-tab="calculator">Retirement Calculator</button>
+  </nav>
 
-    <form id="calculator-form">
+  <!-- ================================================
+       TAB 1: DASHBOARD
+       ================================================ -->
+  <div id="tab-dashboard" class="tab-panel tab-panel--active" role="tabpanel">
+    <div class="container">
+      <h1>Dashboard</h1>
+      <p class="subtitle">Your retirement picture at a glance. Updates live as you fill in the other tabs.</p>
 
-      <!-- SECTION 1: About You -->
-      <section class="card">
-        <h2>About You</h2>
-
-        <div class="field">
-          <label for="current-age">Current Age</label>
-          <input type="number" id="current-age" min="18" max="90" value="35" />
-        </div>
-
-        <div class="field">
-          <label for="retirement-age">Retirement Age</label>
-          <input type="number" id="retirement-age" min="55" max="75" value="65" />
-        </div>
-
-        <div class="field">
-          <label for="withdrawal-years">Years in Retirement</label>
-          <input type="number" id="withdrawal-years" min="1" max="50" value="25" />
-          <span class="hint">How many years will your savings need to last? Used to calculate monthly withdrawals.</span>
-        </div>
-
-        <div class="field">
-          <label for="annual-income">Current Annual Income ($)</label>
-          <input type="number" id="annual-income" min="0" value="75000" />
-        </div>
-      </section>
-
-      <!-- SECTION 2: CPP -->
-      <section class="card">
-        <h2>Canada Pension Plan (CPP)</h2>
-        <p class="hint">CPP is a government pension based on your contributions while working. The maximum monthly amount in 2024 is ~$1,364.</p>
-
-        <div class="field">
-          <label for="cpp-years">Years Contributed to CPP</label>
-          <input type="number" id="cpp-years" min="0" max="47" value="10" />
-        </div>
-
-        <div class="field">
-          <label for="cpp-start-age">Age to Start CPP</label>
-          <select id="cpp-start-age">
-            <option value="60">60 (reduced by 36%)</option>
-            <option value="65" selected>65 (standard amount)</option>
-            <option value="70">70 (increased by 42%)</option>
-          </select>
-          <span class="hint">Starting earlier means smaller monthly payments. Starting later means larger ones.</span>
-        </div>
-      </section>
-
-      <!-- SECTION 3: OAS -->
-      <section class="card">
-        <h2>Old Age Security (OAS)</h2>
-        <p class="hint">OAS is a flat monthly benefit paid to most Canadians at age 65. The maximum in 2024 is ~$713/month.</p>
-
-        <div class="field">
-          <label for="oas-years">Years Lived in Canada After Age 18</label>
-          <input type="number" id="oas-years" min="0" max="40" value="40" />
-          <span class="hint">You need 40 years for the full amount. Fewer years = proportionally less.</span>
-        </div>
-      </section>
-
-      <!-- SECTION 4: Personal Savings -->
-      <section class="card">
-        <h2>Personal Savings</h2>
-        <p class="hint">Enter your current balance and monthly contribution for each account type you have. Leave at 0 for accounts you don't use.</p>
-
-        <!-- 2-column grid of account cards -->
-        <div class="accounts-grid">
-
-          <!-- RRSP -->
-          <div class="account-card account-rrsp">
-            <h3 class="account-title">RRSP</h3>
-            <p class="hint">Registered Retirement Savings Plan. Contributions are tax-deductible; withdrawals are taxed as income.</p>
-            <div class="field">
-              <label for="rrsp-balance">Current Balance ($)</label>
-              <input type="number" id="rrsp-balance" min="0" value="50000" />
-            </div>
-            <div class="field">
-              <label for="rrsp-contribution">Monthly Contribution ($)</label>
-              <input type="number" id="rrsp-contribution" min="0" value="500" />
-            </div>
-            <div class="field">
-              <label for="rrsp-return">Expected Annual Return (%)</label>
-              <input type="number" id="rrsp-return" min="0" max="20" step="0.5" value="5" />
-            </div>
-          </div>
-
-          <!-- TFSA -->
-          <div class="account-card account-tfsa">
-            <h3 class="account-title">TFSA</h3>
-            <p class="hint">Tax-Free Savings Account. Contributions are not tax-deductible, but growth and withdrawals are tax-free.</p>
-            <div class="field">
-              <label for="tfsa-balance">Current Balance ($)</label>
-              <input type="number" id="tfsa-balance" min="0" value="0" />
-            </div>
-            <div class="field">
-              <label for="tfsa-contribution">Monthly Contribution ($)</label>
-              <input type="number" id="tfsa-contribution" min="0" value="0" />
-            </div>
-            <div class="field">
-              <label for="tfsa-return">Expected Annual Return (%)</label>
-              <input type="number" id="tfsa-return" min="0" max="20" step="0.5" value="5" />
-            </div>
-          </div>
-
-          <!-- Non-Registered -->
-          <div class="account-card account-nonreg">
-            <h3 class="account-title">Non-Registered</h3>
-            <p class="hint">Regular investment account. No contribution limits, but investment gains are taxable each year.</p>
-            <div class="field">
-              <label for="nonreg-balance">Current Balance ($)</label>
-              <input type="number" id="nonreg-balance" min="0" value="0" />
-            </div>
-            <div class="field">
-              <label for="nonreg-contribution">Monthly Contribution ($)</label>
-              <input type="number" id="nonreg-contribution" min="0" value="0" />
-            </div>
-            <div class="field">
-              <label for="nonreg-return">Expected Annual Return (%)</label>
-              <input type="number" id="nonreg-return" min="0" max="20" step="0.5" value="5" />
-            </div>
-          </div>
-
-          <!-- Cash Savings -->
-          <div class="account-card account-cash">
-            <h3 class="account-title">Cash Savings</h3>
-            <p class="hint">Savings account, GICs, or cash. Lower risk and lower return than investments.</p>
-            <div class="field">
-              <label for="cash-balance">Current Balance ($)</label>
-              <input type="number" id="cash-balance" min="0" value="0" />
-            </div>
-            <div class="field">
-              <label for="cash-contribution">Monthly Contribution ($)</label>
-              <input type="number" id="cash-contribution" min="0" value="0" />
-            </div>
-            <div class="field">
-              <label for="cash-return">Expected Annual Return (%)</label>
-              <input type="number" id="cash-return" min="0" max="20" step="0.5" value="2" />
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- SECTION 5: Inflation -->
-      <section class="card">
-        <h2>Inflation Adjustment</h2>
-        <p class="hint">Inflation means money loses purchasing power over time. $1,000/month today won't feel like $1,000/month in 30 years.</p>
-
-        <div class="field">
-          <label for="inflation-rate">Expected Annual Inflation Rate (%)</label>
-          <input type="number" id="inflation-rate" min="0" max="10" step="0.5" value="2.5" />
-          <span class="hint">The Bank of Canada targets ~2% inflation. 2-3% is a reasonable assumption.</span>
-        </div>
-
-        <div class="toggle-row">
-          <label class="toggle-label" for="show-real">Show results in today's dollars</label>
-          <label class="toggle">
-            <input type="checkbox" id="show-real" checked />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <span class="hint">When on, amounts are adjusted so you can compare them to your income today.</span>
-      </section>
-
-      <button type="button" id="calculate-btn">Calculate My Retirement</button>
-
-    </form>
-
-    <!-- RESULTS (hidden until calculate is clicked) -->
-    <div id="results" class="card results hidden">
-      <h2>Your Retirement Estimate</h2>
-      <p id="results-context" class="results-context"></p>
-
-      <!-- Per-account breakdown -->
-      <h3 class="section-subheading">Savings at Retirement by Account</h3>
-      <div class="breakdown-grid">
-        <div class="breakdown-item breakdown-rrsp">
-          <span class="breakdown-label">RRSP</span>
-          <span class="breakdown-value" id="rrsp-result">-</span>
-        </div>
-        <div class="breakdown-item breakdown-tfsa">
-          <span class="breakdown-label">TFSA</span>
-          <span class="breakdown-value" id="tfsa-result">-</span>
-        </div>
-        <div class="breakdown-item breakdown-nonreg">
-          <span class="breakdown-label">Non-Registered</span>
-          <span class="breakdown-value" id="nonreg-result">-</span>
-        </div>
-        <div class="breakdown-item breakdown-cash">
-          <span class="breakdown-label">Cash Savings</span>
-          <span class="breakdown-value" id="cash-result">-</span>
-        </div>
+      <!-- Empty state — shown when no retirement data entered yet -->
+      <div id="dashboard-empty" class="dashboard-empty">
+        <p>Fill in the <strong>Retirement Calculator</strong> tab to see your personalized summary here.</p>
       </div>
 
-      <!-- Combined totals -->
-      <h3 class="section-subheading">Monthly Income at Retirement</h3>
-      <div class="result-grid">
-        <div class="result-item">
-          <span class="result-label">CPP Monthly</span>
-          <span class="result-value" id="cpp-result">-</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">OAS Monthly</span>
-          <span class="result-value" id="oas-result">-</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">Total Savings</span>
-          <span class="result-value" id="savings-result">-</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">Monthly from Savings</span>
-          <span class="result-value" id="savings-monthly-result">-</span>
-        </div>
-        <div class="result-item total">
-          <span class="result-label">Total Monthly Income</span>
-          <span class="result-value" id="total-result">-</span>
-        </div>
-        <div class="result-item total">
-          <span class="result-label">Total Annual Income</span>
-          <span class="result-value" id="annual-result">-</span>
-        </div>
-      </div>
+      <!-- Populated state — hidden until data is available -->
+      <div id="dashboard-content" class="dashboard-content hidden">
 
-      <!-- Inflation comparison row -->
-      <div id="inflation-note" class="inflation-note hidden">
-        <span class="inflation-label">In future (nominal) dollars this is</span>
-        <span class="inflation-value" id="nominal-total-result">-</span>
-        <span class="inflation-label">per month — inflation makes it look bigger, but it buys the same amount.</span>
-      </div>
+        <!-- Row 1: Readiness + Gap/Surplus -->
+        <div class="dashboard-top-row">
+          <div class="card dashboard-readiness">
+            <div class="readiness-dot" id="readiness-dot"></div>
+            <div>
+              <span class="readiness-label" id="readiness-label">—</span>
+              <span class="hint">Retirement Readiness</span>
+            </div>
+          </div>
+          <div class="card dashboard-stat">
+            <span class="dash-stat-value" id="dash-gap-surplus">—</span>
+            <span class="dash-stat-label">Monthly Gap / Surplus</span>
+            <span class="hint" id="dash-gap-hint"></span>
+          </div>
+        </div>
 
-      <!-- SAVINGS GROWTH CHART -->
-      <div class="chart-container">
-        <h3 class="chart-title">Savings Growth Over Time</h3>
-        <p class="hint">How your combined savings balance grows between now and retirement, year by year.</p>
-        <canvas id="savings-chart"></canvas>
-      </div>
+        <!-- Row 2: Income breakdown -->
+        <p class="dashboard-section-heading">Income at Retirement</p>
+        <div class="dashboard-income-row">
+          <div class="card dashboard-income-tile">
+            <span class="dash-stat-value" id="dash-cpp">—</span>
+            <span class="dash-stat-label">CPP Monthly</span>
+          </div>
+          <div class="card dashboard-income-tile">
+            <span class="dash-stat-value" id="dash-oas">—</span>
+            <span class="dash-stat-label">OAS Monthly</span>
+          </div>
+          <div class="card dashboard-income-tile">
+            <span class="dash-stat-value" id="dash-savings-monthly">—</span>
+            <span class="dash-stat-label">From Savings Monthly</span>
+          </div>
+          <div class="card dashboard-income-tile">
+            <span class="dash-stat-value" id="dash-total-monthly">—</span>
+            <span class="dash-stat-label">Total Monthly Income</span>
+          </div>
+        </div>
 
-      <p class="disclaimer">These are estimates only. Consult a financial advisor for personalized advice. CPP and OAS amounts are based on 2024 figures and will change with inflation.</p>
+        <!-- Row 3: Budget vs Goal + Savings Rate -->
+        <div class="dashboard-mid-row">
+          <div class="card dashboard-stat">
+            <span class="dash-stat-value" id="dash-budget-spend">—</span>
+            <span class="dash-stat-label">Current Monthly Spend</span>
+            <span class="hint" id="dash-budget-hint">Enter budget in the Budget tab</span>
+          </div>
+          <div class="card dashboard-stat">
+            <span class="dash-stat-value" id="dash-savings-rate">—</span>
+            <span class="dash-stat-label">Current Savings Rate</span>
+            <span class="hint">Monthly contributions ÷ monthly income</span>
+          </div>
+        </div>
+
+        <!-- Row 4: Key Facts -->
+        <div class="card">
+          <h3 class="chart-title">Key Facts</h3>
+          <ul class="key-facts-list" id="key-facts-list"></ul>
+        </div>
+
+      </div><!-- /dashboard-content -->
     </div>
-
   </div>
+
+  <!-- ================================================
+       TAB 2: BUDGET
+       ================================================ -->
+  <div id="tab-budget" class="tab-panel" role="tabpanel" hidden>
+    <div class="container">
+      <h1>Budget</h1>
+      <p class="subtitle">Track your monthly and annual spending. Expand any category to break it down further.</p>
+
+      <div class="card">
+        <h2>Monthly Spending</h2>
+        <p class="hint">Enter your total for each category, or expand it to fill in line items — the total will update automatically.</p>
+
+        <div class="budget-categories">
+
+          <!-- HOUSING -->
+          <div class="budget-row" data-category="housing">
+            <div class="budget-row-header">
+              <span class="budget-row-label">Housing</span>
+              <input type="number" class="budget-cat-input" id="budget-total-housing" min="0" value="0" />
+              <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Housing">
+                <span class="budget-chevron">&#8964;</span>
+              </button>
+            </div>
+            <div class="budget-subitems" id="budget-sub-housing" hidden>
+              <div class="budget-subitem">
+                <label for="budget-housing-rent">Rent / Mortgage</label>
+                <input type="number" id="budget-housing-rent" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-housing-utilities">Utilities</label>
+                <input type="number" id="budget-housing-utilities" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-housing-insurance">Home Insurance</label>
+                <input type="number" id="budget-housing-insurance" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-housing-maintenance">Maintenance</label>
+                <input type="number" id="budget-housing-maintenance" min="0" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- FOOD -->
+          <div class="budget-row" data-category="food">
+            <div class="budget-row-header">
+              <span class="budget-row-label">Food</span>
+              <input type="number" class="budget-cat-input" id="budget-total-food" min="0" value="0" />
+              <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Food">
+                <span class="budget-chevron">&#8964;</span>
+              </button>
+            </div>
+            <div class="budget-subitems" id="budget-sub-food" hidden>
+              <div class="budget-subitem">
+                <label for="budget-food-groceries">Groceries</label>
+                <input type="number" id="budget-food-groceries" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-food-dining">Dining Out</label>
+                <input type="number" id="budget-food-dining" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-food-coffee">Coffee</label>
+                <input type="number" id="budget-food-coffee" min="0" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- TRANSPORT -->
+          <div class="budget-row" data-category="transport">
+            <div class="budget-row-header">
+              <span class="budget-row-label">Transport</span>
+              <input type="number" class="budget-cat-input" id="budget-total-transport" min="0" value="0" />
+              <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Transport">
+                <span class="budget-chevron">&#8964;</span>
+              </button>
+            </div>
+            <div class="budget-subitems" id="budget-sub-transport" hidden>
+              <div class="budget-subitem">
+                <label for="budget-transport-car">Car Payment</label>
+                <input type="number" id="budget-transport-car" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-transport-gas">Gas</label>
+                <input type="number" id="budget-transport-gas" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-transport-insurance">Car Insurance</label>
+                <input type="number" id="budget-transport-insurance" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-transport-transit">Transit</label>
+                <input type="number" id="budget-transport-transit" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-transport-parking">Parking</label>
+                <input type="number" id="budget-transport-parking" min="0" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- HEALTH -->
+          <div class="budget-row" data-category="health">
+            <div class="budget-row-header">
+              <span class="budget-row-label">Health</span>
+              <input type="number" class="budget-cat-input" id="budget-total-health" min="0" value="0" />
+              <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Health">
+                <span class="budget-chevron">&#8964;</span>
+              </button>
+            </div>
+            <div class="budget-subitems" id="budget-sub-health" hidden>
+              <div class="budget-subitem">
+                <label for="budget-health-dental">Dental</label>
+                <input type="number" id="budget-health-dental" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-health-rx">Prescriptions</label>
+                <input type="number" id="budget-health-rx" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-health-gym">Gym</label>
+                <input type="number" id="budget-health-gym" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-health-therapy">Therapy</label>
+                <input type="number" id="budget-health-therapy" min="0" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- PERSONAL -->
+          <div class="budget-row" data-category="personal">
+            <div class="budget-row-header">
+              <span class="budget-row-label">Personal</span>
+              <input type="number" class="budget-cat-input" id="budget-total-personal" min="0" value="0" />
+              <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Personal">
+                <span class="budget-chevron">&#8964;</span>
+              </button>
+            </div>
+            <div class="budget-subitems" id="budget-sub-personal" hidden>
+              <div class="budget-subitem">
+                <label for="budget-personal-clothing">Clothing</label>
+                <input type="number" id="budget-personal-clothing" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-personal-haircuts">Haircuts</label>
+                <input type="number" id="budget-personal-haircuts" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-personal-care">Personal Care</label>
+                <input type="number" id="budget-personal-care" min="0" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- ENTERTAINMENT -->
+          <div class="budget-row" data-category="entertainment">
+            <div class="budget-row-header">
+              <span class="budget-row-label">Entertainment</span>
+              <input type="number" class="budget-cat-input" id="budget-total-entertainment" min="0" value="0" />
+              <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Entertainment">
+                <span class="budget-chevron">&#8964;</span>
+              </button>
+            </div>
+            <div class="budget-subitems" id="budget-sub-entertainment" hidden>
+              <div class="budget-subitem">
+                <label for="budget-entertainment-streaming">Streaming</label>
+                <input type="number" id="budget-entertainment-streaming" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-entertainment-hobbies">Hobbies</label>
+                <input type="number" id="budget-entertainment-hobbies" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-entertainment-events">Events</label>
+                <input type="number" id="budget-entertainment-events" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-entertainment-travel">Travel</label>
+                <input type="number" id="budget-entertainment-travel" min="0" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- FAMILY -->
+          <div class="budget-row" data-category="family">
+            <div class="budget-row-header">
+              <span class="budget-row-label">Family</span>
+              <input type="number" class="budget-cat-input" id="budget-total-family" min="0" value="0" />
+              <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Family">
+                <span class="budget-chevron">&#8964;</span>
+              </button>
+            </div>
+            <div class="budget-subitems" id="budget-sub-family" hidden>
+              <div class="budget-subitem">
+                <label for="budget-family-childcare">Childcare</label>
+                <input type="number" id="budget-family-childcare" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-family-pet">Pet</label>
+                <input type="number" id="budget-family-pet" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-family-gifts">Gifts</label>
+                <input type="number" id="budget-family-gifts" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-family-donations">Donations</label>
+                <input type="number" id="budget-family-donations" min="0" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- OTHER -->
+          <div class="budget-row" data-category="other">
+            <div class="budget-row-header">
+              <span class="budget-row-label">Other</span>
+              <input type="number" class="budget-cat-input" id="budget-total-other" min="0" value="0" />
+              <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Other">
+                <span class="budget-chevron">&#8964;</span>
+              </button>
+            </div>
+            <div class="budget-subitems" id="budget-sub-other" hidden>
+              <div class="budget-subitem">
+                <label for="budget-other-misc">Miscellaneous</label>
+                <input type="number" id="budget-other-misc" min="0" value="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-other-subscriptions">Subscriptions</label>
+                <input type="number" id="budget-other-subscriptions" min="0" value="0" />
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /budget-categories -->
+
+        <!-- Live totals footer -->
+        <div class="budget-totals-row">
+          <div class="budget-total-block">
+            <span class="budget-total-label">Monthly Total</span>
+            <span class="budget-total-value" id="budget-monthly-total">$0</span>
+          </div>
+          <div class="budget-total-block">
+            <span class="budget-total-label">Annual Total</span>
+            <span class="budget-total-value" id="budget-annual-total">$0</span>
+          </div>
+        </div>
+
+      </div><!-- /card -->
+    </div>
+  </div>
+
+  <!-- ================================================
+       TAB 3: RETIREMENT CALCULATOR
+       ================================================ -->
+  <div id="tab-calculator" class="tab-panel" role="tabpanel" hidden>
+    <div class="container">
+      <h1>Canadian Retirement Calculator</h1>
+      <p class="subtitle">Estimate your retirement income from CPP, OAS, and personal savings.</p>
+
+      <form id="calculator-form">
+
+        <!-- SECTION 1: About You -->
+        <section class="card">
+          <h2>About You</h2>
+
+          <div class="field">
+            <label for="current-age">Current Age</label>
+            <input type="number" id="current-age" min="18" max="90" value="35" />
+          </div>
+
+          <div class="field">
+            <label for="retirement-age">Retirement Age</label>
+            <input type="number" id="retirement-age" min="55" max="75" value="65" />
+          </div>
+
+          <div class="field">
+            <label for="withdrawal-years">Years in Retirement</label>
+            <input type="number" id="withdrawal-years" min="1" max="50" value="25" />
+            <span class="hint">How many years will your savings need to last? Used to calculate monthly withdrawals.</span>
+          </div>
+
+          <div class="field">
+            <label for="annual-income">Current Annual Income ($)</label>
+            <input type="number" id="annual-income" min="0" value="75000" />
+          </div>
+
+          <!-- RETIREMENT GOALS subsection -->
+          <div class="subsection-divider"></div>
+          <h3 class="subsection-heading">Retirement Goals</h3>
+
+          <div class="field">
+            <label>Lifestyle Target</label>
+            <div class="lifestyle-pills" id="lifestyle-pills">
+              <button type="button" class="lifestyle-pill" data-lifestyle="low">Low</button>
+              <button type="button" class="lifestyle-pill lifestyle-pill--active" data-lifestyle="comfortable">Comfortable</button>
+              <button type="button" class="lifestyle-pill" data-lifestyle="high">High</button>
+            </div>
+            <span class="hint" id="lifestyle-hint">Comfortable: ~$5,000/month — common financial planner target (~$60K/year)</span>
+          </div>
+
+          <div class="field">
+            <label for="monthly-goal">Monthly Retirement Goal ($)</label>
+            <input type="number" id="monthly-goal" min="0" value="5000" />
+            <span class="hint">Pre-filled by your lifestyle selection above. You can override this.</span>
+          </div>
+
+        </section>
+
+        <!-- SECTION 2: CPP -->
+        <section class="card">
+          <h2>Canada Pension Plan (CPP)</h2>
+          <p class="hint">CPP is a government pension based on your contributions while working. The maximum monthly amount in 2024 is ~$1,364.</p>
+
+          <div class="field">
+            <label for="cpp-years">Years Contributed to CPP (so far)</label>
+            <input type="number" id="cpp-years" min="0" max="47" value="10" />
+            <span class="hint">Enter how many years you have contributed so far. The calculator will add your remaining working years automatically.</span>
+          </div>
+
+          <div class="field">
+            <label for="cpp-start-age">Age to Start CPP</label>
+            <select id="cpp-start-age">
+              <option value="60">60 (reduced by 36%)</option>
+              <option value="65" selected>65 (standard amount)</option>
+              <option value="70">70 (increased by 42%)</option>
+            </select>
+            <span class="hint">Starting earlier means smaller monthly payments. Starting later means larger ones.</span>
+          </div>
+        </section>
+
+        <!-- SECTION 3: OAS -->
+        <section class="card">
+          <h2>Old Age Security (OAS)</h2>
+          <p class="hint">OAS is a flat monthly benefit paid to most Canadians at age 65. The maximum in 2024 is ~$713/month.</p>
+
+          <div class="field">
+            <label for="oas-years">Years Lived in Canada After Age 18</label>
+            <input type="number" id="oas-years" min="0" max="40" value="40" />
+            <span class="hint">You need 40 years for the full amount. Fewer years = proportionally less.</span>
+          </div>
+        </section>
+
+        <!-- SECTION 4: Personal Savings -->
+        <section class="card">
+          <h2>Personal Savings</h2>
+          <p class="hint">Enter your current balance and monthly contribution for each account type you have. Leave at 0 for accounts you don't use.</p>
+
+          <div class="accounts-grid">
+
+            <!-- RRSP -->
+            <div class="account-card account-rrsp">
+              <h3 class="account-title">RRSP</h3>
+              <p class="hint">Registered Retirement Savings Plan. Contributions are tax-deductible; withdrawals are taxed as income.</p>
+              <div class="field">
+                <label for="rrsp-balance">Current Balance ($)</label>
+                <input type="number" id="rrsp-balance" min="0" value="50000" />
+              </div>
+              <div class="field">
+                <label for="rrsp-contribution">Monthly Contribution ($)</label>
+                <input type="number" id="rrsp-contribution" min="0" value="500" />
+              </div>
+              <div class="field">
+                <label for="rrsp-return">Expected Annual Return (%)</label>
+                <input type="number" id="rrsp-return" min="0" max="20" step="0.5" value="5" />
+              </div>
+            </div>
+
+            <!-- TFSA -->
+            <div class="account-card account-tfsa">
+              <h3 class="account-title">TFSA</h3>
+              <p class="hint">Tax-Free Savings Account. Contributions are not tax-deductible, but growth and withdrawals are tax-free.</p>
+              <div class="field">
+                <label for="tfsa-balance">Current Balance ($)</label>
+                <input type="number" id="tfsa-balance" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label for="tfsa-contribution">Monthly Contribution ($)</label>
+                <input type="number" id="tfsa-contribution" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label for="tfsa-return">Expected Annual Return (%)</label>
+                <input type="number" id="tfsa-return" min="0" max="20" step="0.5" value="5" />
+              </div>
+            </div>
+
+            <!-- Non-Registered -->
+            <div class="account-card account-nonreg">
+              <h3 class="account-title">Non-Registered</h3>
+              <p class="hint">Regular investment account. No contribution limits, but investment gains are taxable each year.</p>
+              <div class="field">
+                <label for="nonreg-balance">Current Balance ($)</label>
+                <input type="number" id="nonreg-balance" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label for="nonreg-contribution">Monthly Contribution ($)</label>
+                <input type="number" id="nonreg-contribution" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label for="nonreg-return">Expected Annual Return (%)</label>
+                <input type="number" id="nonreg-return" min="0" max="20" step="0.5" value="5" />
+              </div>
+            </div>
+
+            <!-- Cash Savings -->
+            <div class="account-card account-cash">
+              <h3 class="account-title">Cash Savings</h3>
+              <p class="hint">Savings account, GICs, or cash. Lower risk and lower return than investments.</p>
+              <div class="field">
+                <label for="cash-balance">Current Balance ($)</label>
+                <input type="number" id="cash-balance" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label for="cash-contribution">Monthly Contribution ($)</label>
+                <input type="number" id="cash-contribution" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label for="cash-return">Expected Annual Return (%)</label>
+                <input type="number" id="cash-return" min="0" max="20" step="0.5" value="2" />
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECTION 5: Inflation -->
+        <section class="card">
+          <h2>Inflation Adjustment</h2>
+          <p class="hint">Inflation means money loses purchasing power over time. $1,000/month today won't feel like $1,000/month in 30 years.</p>
+
+          <div class="field">
+            <label for="inflation-rate">Expected Annual Inflation Rate (%)</label>
+            <input type="number" id="inflation-rate" min="0" max="10" step="0.5" value="2.5" />
+            <span class="hint">The Bank of Canada targets ~2% inflation. 2-3% is a reasonable assumption.</span>
+          </div>
+
+          <div class="toggle-row">
+            <label class="toggle-label" for="show-real">Show results in today's dollars</label>
+            <label class="toggle">
+              <input type="checkbox" id="show-real" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <span class="hint">When on, amounts are adjusted so you can compare them to your income today.</span>
+        </section>
+
+        <button type="button" id="calculate-btn">Calculate My Retirement</button>
+
+      </form>
+
+      <!-- RESULTS (hidden until calculate is clicked) -->
+      <div id="results" class="card results hidden">
+        <h2>Your Retirement Estimate</h2>
+        <p id="results-context" class="results-context"></p>
+
+        <!-- Per-account breakdown -->
+        <h3 class="section-subheading">Savings at Retirement by Account</h3>
+        <div class="breakdown-grid">
+          <div class="breakdown-item breakdown-rrsp">
+            <span class="breakdown-label">RRSP</span>
+            <span class="breakdown-value" id="rrsp-result">-</span>
+          </div>
+          <div class="breakdown-item breakdown-tfsa">
+            <span class="breakdown-label">TFSA</span>
+            <span class="breakdown-value" id="tfsa-result">-</span>
+          </div>
+          <div class="breakdown-item breakdown-nonreg">
+            <span class="breakdown-label">Non-Registered</span>
+            <span class="breakdown-value" id="nonreg-result">-</span>
+          </div>
+          <div class="breakdown-item breakdown-cash">
+            <span class="breakdown-label">Cash Savings</span>
+            <span class="breakdown-value" id="cash-result">-</span>
+          </div>
+        </div>
+
+        <!-- Combined totals -->
+        <h3 class="section-subheading">Monthly Income at Retirement</h3>
+        <div class="result-grid">
+          <div class="result-item">
+            <span class="result-label">CPP Monthly</span>
+            <span class="result-value" id="cpp-result">-</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">OAS Monthly</span>
+            <span class="result-value" id="oas-result">-</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Total Savings</span>
+            <span class="result-value" id="savings-result">-</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Monthly from Savings</span>
+            <span class="result-value" id="savings-monthly-result">-</span>
+          </div>
+          <div class="result-item total">
+            <span class="result-label">Total Monthly Income</span>
+            <span class="result-value" id="total-result">-</span>
+          </div>
+          <div class="result-item total">
+            <span class="result-label">Total Annual Income</span>
+            <span class="result-value" id="annual-result">-</span>
+          </div>
+        </div>
+
+        <!-- Inflation comparison row -->
+        <div id="inflation-note" class="inflation-note hidden">
+          <span class="inflation-label">In future (nominal) dollars this is</span>
+          <span class="inflation-value" id="nominal-total-result">-</span>
+          <span class="inflation-label">per month — inflation makes it look bigger, but it buys the same amount.</span>
+        </div>
+
+        <!-- SAVINGS GROWTH CHART -->
+        <div class="chart-container">
+          <h3 class="chart-title">Savings Growth Over Time</h3>
+          <p class="hint">How your combined savings balance grows between now and retirement, year by year.</p>
+          <canvas id="savings-chart"></canvas>
+        </div>
+
+        <p class="disclaimer">These are estimates only. Consult a financial advisor for personalized advice. CPP and OAS amounts are based on 2024 figures and will change with inflation.</p>
+      </div>
+
+    </div>
+  </div><!-- /tab-calculator -->
 
   <script src="app.js"></script>
 </body>
