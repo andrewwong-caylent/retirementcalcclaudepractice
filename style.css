@@ -982,3 +982,96 @@ select:focus {
 .fact-green  { color: #38a169 !important; }
 .fact-yellow { color: #d69e2e !important; }
 .fact-red    { color: #e53e3e !important; }
+
+/* Reset button danger variant */
+.reset-btn--danger {
+  border-color: #feb2b2;
+  color: #c8102e;
+}
+.reset-btn--danger:hover {
+  background: #fff5f5;
+  border-color: #e53e3e;
+  color: #9b1c1c;
+}
+
+/* Dashboard reset toolbar */
+.dashboard-reset-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+/* =========================================
+   RESPONSIVE BREAKPOINTS
+   ========================================= */
+
+/* ---- MEDIUM: 600px – 899px (tablet / MacBook) ---- */
+@media (max-width: 899px) {
+  .container {
+    padding: 1rem 0.875rem;
+  }
+  /* 4-col income row → 2×2 */
+  .dashboard-income-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- SMALL: < 600px (phone) ---- */
+@media (max-width: 599px) {
+  .container {
+    padding: 0.75rem 0.625rem;
+  }
+  .tab-btn {
+    font-size: 0.8rem;
+    padding: 0.75rem 0.4rem;
+  }
+  h1 {
+    font-size: 1.4rem;
+  }
+  .card {
+    padding: 1rem;
+  }
+  /* Dashboard grids → single column */
+  .dashboard-top-row,
+  .dashboard-charts-row,
+  .dashboard-mid-row {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-income-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  /* Calculator grids */
+  .accounts-grid,
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+  .breakdown-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  /* Budget */
+  .budget-cat-input {
+    width: 80px;
+  }
+  .budget-subitems {
+    grid-template-columns: 1fr;
+  }
+  .budget-totals-row {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+  /* Misc */
+  .lifestyle-pills { flex-wrap: wrap; }
+  .toggle-row      { flex-wrap: wrap; gap: 0.5rem; }
+  .key-facts-list li { flex-wrap: wrap; gap: 0.25rem; }
+}
+
+/* ---- EXTRA-SMALL: < 380px (small phones) ---- */
+@media (max-width: 379px) {
+  .dashboard-income-row {
+    grid-template-columns: 1fr;
+  }
+  .budget-cat-input {
+    width: 70px;
+  }
+}
