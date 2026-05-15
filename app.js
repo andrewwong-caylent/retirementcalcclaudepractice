@@ -56,6 +56,63 @@ const DEFAULTS = {
 // localStorage key
 const STORAGE_KEY = "retirement-calc-state";
 
+// --- BC + FEDERAL TAX ESTIMATE (2024) ---
+
+function calculateBCAfterTaxAnnual(grossIncome) {
+  const FEDERAL_BPA = 15705;
+  const BC_BPA      = 11981;
+
+  const FEDERAL_BRACKETS = [
+    { limit:  55867,   rate: 0.15   },
+    { limit: 111733,   rate: 0.205  },
+    { limit: 154906,   rate: 0.26   },
+    { limit: 220000,   rate: 0.29   },
+    { limit: Infinity, rate: 0.33   },
+  ];
+  const BC_BRACKETS = [
+    { limit:  45654,   rate: 0.0506 },
+    { limit:  91310,   rate: 0.077  },
+    { limit: 104835,   rate: 0.105  },
+    { limit: 127299,   rate: 0.1229 },
+    { limit: 172602,   rate: 0.147  },
+    { limit: 240716,   rate: 0.168  },
+    { limit: Infinity, rate: 0.205  },
+  ];
+
+  function applyBrackets(taxable, brackets) {
+    if (taxable <= 0) return 0;
+    let tax = 0, prev = 0;
+    for (const b of brackets) {
+      if (taxable <= prev) break;
+      tax += (Math.min(taxable, b.limit) - prev) * b.rate;
+      prev = b.limit;
+    }
+    return tax;
+  }
+
+  const fedTax = applyBrackets(Math.max(0, grossIncome - FEDERAL_BPA), FEDERAL_BRACKETS);
+  const bcTax  = applyBrackets(Math.max(0, grossIncome - BC_BPA),      BC_BRACKETS);
+  return Math.max(0, grossIncome - fedTax - bcTax);
+}
+
+function calculateAfterTaxMonthly(grossAnnual) {
+  return calculateBCAfterTaxAnnual(grossAnnual) / 12;
+}
+
+function updateAfterTaxIncomeHint() {
+  const el = document.getElementById("after-tax-income-hint");
+  if (!el) return;
+  const gross = getInput("annual-income");
+  if (gross <= 0) {
+    el.textContent = "Enter your gross income to see estimated after-tax monthly income.";
+    return;
+  }
+  const monthly = Math.round(calculateAfterTaxMonthly(gross));
+  el.textContent =
+    `Estimated after-tax monthly income: ${formatCurrency(monthly)} ` +
+    `(BC resident, 2024 federal + provincial rates, basic personal amounts only — estimate)`;
+}
+
 // --- SHARED STATE ---
 const appState = {
   retirement: {
@@ -575,8 +632,9 @@ function generateRetirementInsights(r, b) {
 
   const ratio = r.monthlyGoal > 0 ? r.totalMonthly / r.monthlyGoal : 1;
   const gap   = r.totalMonthly - r.monthlyGoal;
-  const savingsRate = r.annualIncome > 0
-    ? Math.round((r.monthlyContributions / (r.annualIncome / 12)) * 100)
+  const afterTaxMonthly = r.annualIncome > 0 ? calculateAfterTaxMonthly(r.annualIncome) : 0;
+  const savingsRate = afterTaxMonthly > 0
+    ? Math.round((r.monthlyContributions / afterTaxMonthly) * 100)
     : 0;
 
   // --- Readiness ---
@@ -962,7 +1020,7 @@ function renderDashboard() {
   }
 
   // --- Savings Rate ---
-  const monthlyIncome = r.annualIncome / 12;
+  const monthlyIncome = r.annualIncome > 0 ? calculateAfterTaxMonthly(r.annualIncome) : 0;
   const savingsRate = monthlyIncome > 0
     ? Math.round((r.monthlyContributions / monthlyIncome) * 100)
     : 0;
@@ -1022,19 +1080,35 @@ function initBudgetExpandToggles() {
 
 function initBudgetSubitemSync() {
   document.querySelectorAll(".budget-subitems").forEach(panel => {
-    panel.addEventListener("input", () => {
-      const row        = panel.closest(".budget-row");
-      const cat        = row.dataset.category;
-      const totalInput = document.getElementById(`budget-total-${cat}`);
-      let sum = 0;
-      panel.querySelectorAll(".formula-input").forEach(inp => {
-        sum += evaluateFormulaInput(inp.value);
+    const row        = panel.closest(".budget-row");
+    const cat        = row.dataset.category;
+    const totalInput = document.getElementById(`budget-total-${cat}`);
+
+    panel.querySelectorAll(".formula-input").forEach(subInput => {
+      subInput.addEventListener("input", () => {
+        let sum = 0;
+        panel.querySelectorAll(".formula-input").forEach(inp => {
+          sum += evaluateFormulaInput(inp.value);
+        });
+        totalInput.value = sum > 0 ? String(sum) : "";
+        updateBudgetTotalsDisplay();
+        updateBudgetVisuals();
+        saveState();
       });
-      totalInput.value = sum > 0 ? String(sum) : "";
-      updateBudgetTotalsDisplay();
-      updateBudgetVisuals();
-      saveState();
     });
+  });
+}
+
+function reconcileBudgetSubitemTotals() {
+  document.querySelectorAll(".budget-subitems").forEach(panel => {
+    const row        = panel.closest(".budget-row");
+    const cat        = row.dataset.category;
+    const totalInput = document.getElementById(`budget-total-${cat}`);
+    let sum = 0;
+    panel.querySelectorAll(".formula-input").forEach(inp => {
+      sum += evaluateFormulaInput(inp.value);
+    });
+    if (sum > 0) totalInput.value = String(sum);
   });
 }
 
@@ -1102,6 +1176,7 @@ function initLifestylePills() {
 
 function initLiveUpdates() {
   document.getElementById("calculator-form").addEventListener("input", () => {
+    updateAfterTaxIncomeHint();
     syncRetirementState();
     renderDashboard();
     saveState();
@@ -1134,7 +1209,7 @@ const CALC_INPUT_IDS = [
 
 const BUDGET_INPUT_IDS = [
   "budget-total-housing", "budget-housing-rent", "budget-housing-utilities",
-  "budget-housing-insurance", "budget-housing-maintenance",
+  "budget-housing-insurance", "budget-housing-property-tax", "budget-housing-maintenance",
   "budget-total-food", "budget-food-groceries", "budget-food-dining", "budget-food-coffee",
   "budget-total-transport", "budget-transport-car", "budget-transport-gas",
   "budget-transport-insurance", "budget-transport-transit", "budget-transport-parking",
@@ -1210,42 +1285,65 @@ function loadState() {
   return true;
 }
 
-function resetState() {
-  if (!confirm("Reset all inputs to defaults? This cannot be undone.")) return;
+function _resetLifestylePillsToDefault() {
+  document.querySelectorAll(".lifestyle-pill").forEach(p => {
+    p.classList.toggle("lifestyle-pill--active", p.dataset.lifestyle === "comfortable");
+  });
+  document.getElementById("lifestyle-hint").textContent = LIFESTYLE_PRESETS.comfortable.hint;
+}
 
-  // Reset calculator inputs to defaults
+function resetCalculator() {
+  if (!confirm("Reset all calculator inputs to defaults?")) return;
   Object.entries(DEFAULTS).forEach(([id, val]) => {
     const el = document.getElementById(id);
     if (!el) return;
-    if (el.type === "checkbox") {
-      el.checked = val;
-    } else {
-      el.value = String(val);
-    }
+    el.type === "checkbox" ? (el.checked = val) : (el.value = String(val));
   });
+  _resetLifestylePillsToDefault();
+  updateAfterTaxIncomeHint();
+  document.getElementById("results").classList.add("hidden");
+  syncRetirementState();
+  renderDashboard();
+  saveState();
+}
 
-  // Clear budget inputs
+function resetBudget() {
+  if (!confirm("Reset all budget inputs to zero?")) return;
   BUDGET_INPUT_IDS.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+  updateBudgetTotalsDisplay();
+  updateBudgetVisuals();
+  renderDashboard();
+  saveState();
+}
 
-  // Clear saved state
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
-
-  // Re-run all syncs
+function resetAll() {
+  if (!confirm("Reset ALL inputs (calculator + budget) to defaults? This cannot be undone.")) return;
+  Object.entries(DEFAULTS).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.type === "checkbox" ? (el.checked = val) : (el.value = String(val));
+  });
+  BUDGET_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  _resetLifestylePillsToDefault();
+  updateAfterTaxIncomeHint();
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  document.getElementById("results").classList.add("hidden");
   syncRetirementState();
   updateBudgetTotalsDisplay();
   updateBudgetVisuals();
   renderDashboard();
-
-  // Hide results
-  document.getElementById("results").classList.add("hidden");
 }
 
 function initResetButton() {
-  const btn = document.getElementById("reset-btn");
-  if (btn) btn.addEventListener("click", resetState);
+  document.getElementById("reset-all-btn")        ?.addEventListener("click", resetAll);
+  document.getElementById("reset-calculator-btn") ?.addEventListener("click", resetCalculator);
+  document.getElementById("reset-budget-btn")     ?.addEventListener("click", resetBudget);
 }
 
 
@@ -1266,14 +1364,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Restore saved state (if any), otherwise leave defaults
   const restored = loadState();
 
+  // After page-restore, re-sum sub-items into category totals
+  // (programmatic .value= assignments don't fire input events)
+  if (restored) reconcileBudgetSubitemTotals();
+
+  // Update after-tax income hint based on loaded/default value
+  updateAfterTaxIncomeHint();
+
   // After loading, run all the startup syncs
   syncRetirementState();
   updateBudgetTotalsDisplay();
   updateBudgetVisuals();
   renderDashboard();
-
-  // If we restored budget data, re-trigger budget totals display
-  if (restored) {
-    updateBudgetTotalsDisplay();
-  }
 });

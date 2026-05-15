@@ -118,6 +118,11 @@
           <ul class="key-facts-list" id="key-facts-list"></ul>
         </div>
 
+        <!-- Reset All -->
+        <div class="dashboard-reset-toolbar">
+          <button type="button" id="reset-all-btn" class="reset-btn reset-btn--danger">Reset All</button>
+        </div>
+
       </div><!-- /dashboard-content -->
     </div>
   </div>
@@ -129,6 +134,10 @@
     <div class="container">
       <h1>Budget</h1>
       <p class="subtitle">Track your monthly and annual spending. Expand any category to break it down further.</p>
+
+      <div class="calculator-toolbar">
+        <button type="button" id="reset-budget-btn" class="reset-btn">Reset Budget</button>
+      </div>
 
       <div class="card">
         <h2>Monthly Spending</h2>
@@ -158,6 +167,10 @@
               <div class="budget-subitem">
                 <label for="budget-housing-insurance">Home Insurance</label>
                 <input type="text" inputmode="decimal" class="formula-input" id="budget-housing-insurance" placeholder="0" />
+              </div>
+              <div class="budget-subitem">
+                <label for="budget-housing-property-tax">Property Tax (monthly)</label>
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-housing-property-tax" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-housing-maintenance">Maintenance</label>
@@ -424,7 +437,7 @@
 
       <!-- Reset button -->
       <div class="calculator-toolbar">
-        <button type="button" id="reset-btn" class="reset-btn">Reset All</button>
+        <button type="button" id="reset-calculator-btn" class="reset-btn">Reset Calculator</button>
       </div>
 
       <form id="calculator-form">
@@ -450,8 +463,9 @@
           </div>
 
           <div class="field">
-            <label for="annual-income">Current Annual Income ($)</label>
+            <label for="annual-income">Gross Annual Income (Before Tax) ($)</label>
             <input type="text" inputmode="decimal" class="formula-input" id="annual-income" placeholder="75000" />
+            <span class="hint" id="after-tax-income-hint">Enter your gross income to see estimated after-tax monthly income.</span>
           </div>
 
           <!-- RETIREMENT GOALS subsection -->
