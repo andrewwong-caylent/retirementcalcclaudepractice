@@ -27,6 +27,35 @@ const BUDGET_CATEGORIES = [
   { id: "other",         label: "Other",          color: "#94a3b8" },
 ];
 
+// Default values for all calculator inputs (used for reset + initial load)
+const DEFAULTS = {
+  "current-age":       "35",
+  "retirement-age":    "65",
+  "withdrawal-years":  "25",
+  "annual-income":     "75000",
+  "monthly-goal":      "5000",
+  "cpp-years":         "10",
+  "cpp-start-age":     "65",
+  "oas-years":         "40",
+  "inflation-rate":    "2.5",
+  "show-real":         true,
+  "rrsp-balance":      "50000",
+  "rrsp-contribution": "500",
+  "rrsp-return":       "5",
+  "tfsa-balance":      "0",
+  "tfsa-contribution": "0",
+  "tfsa-return":       "5",
+  "nonreg-balance":    "0",
+  "nonreg-contribution": "0",
+  "nonreg-return":     "5",
+  "cash-balance":      "0",
+  "cash-contribution": "0",
+  "cash-return":       "2",
+};
+
+// localStorage key
+const STORAGE_KEY = "retirement-calc-state";
+
 // --- SHARED STATE ---
 const appState = {
   retirement: {
@@ -64,8 +93,41 @@ function formatCurrency(amount) {
   }).format(amount);
 }
 
+// Read a text-based formula input as a number
 function getInput(id) {
-  return parseFloat(document.getElementById(id).value) || 0;
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  return evaluateFormulaInput(el.value);
+}
+
+// Safe formula evaluator: only allows digits, spaces, . + - * / ( )
+function evaluateFormulaInput(raw) {
+  if (raw === "" || raw == null) return 0;
+  const sanitized = String(raw).replace(/[^0-9\s\.\+\-\*\/\(\)]/g, "");
+  if (sanitized.trim() === "") return 0;
+  try {
+    // eslint-disable-next-line no-new-func
+    const result = Function('"use strict"; return (' + sanitized + ')')();
+    if (typeof result === "number" && isFinite(result)) return result;
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+
+// --- FORMULA INPUT BEHAVIOUR ---
+
+// On blur: evaluate the expression and replace the raw text with the result
+function initFormulaInputs() {
+  document.querySelectorAll(".formula-input").forEach(input => {
+    input.addEventListener("blur", () => {
+      const val = evaluateFormulaInput(input.value);
+      if (input.value.trim() !== "" && input.value !== String(val)) {
+        input.value = val > 0 ? String(val) : "";
+      }
+    });
+  });
 }
 
 
@@ -217,6 +279,9 @@ function syncRetirementState() {
     monthlyContributions: r.monthlyContributions,
   };
   appState.hasRetirementData = true;
+
+  // Keep budget savings row in sync
+  updateBudgetSavingsDisplay();
 }
 
 function syncBudgetState() {
@@ -233,6 +298,14 @@ function syncBudgetState() {
     categories,
   };
   appState.hasBudgetData = monthlyTotal > 0;
+}
+
+// Update the read-only savings display row in the Budget tab
+function updateBudgetSavingsDisplay() {
+  const el = document.getElementById("budget-savings-display");
+  if (!el) return;
+  const contrib = appState.retirement.monthlyContributions || 0;
+  el.textContent = formatCurrency(contrib);
 }
 
 
@@ -828,21 +901,32 @@ function renderDashboard() {
   const ratio = r.monthlyGoal > 0 ? r.totalMonthly / r.monthlyGoal : 1;
   const gap   = r.totalMonthly - r.monthlyGoal;
 
-  let readinessText, readinessClass;
+  let readinessText, readinessClass, barClass;
   if (ratio >= 1.0) {
     readinessText  = "On Track";
     readinessClass = "readiness-dot--green";
+    barClass       = "readiness-bar-fill--green";
   } else if (ratio >= 0.75) {
     readinessText  = "Close";
     readinessClass = "readiness-dot--yellow";
+    barClass       = "readiness-bar-fill--yellow";
   } else {
     readinessText  = "Needs Attention";
     readinessClass = "readiness-dot--red";
+    barClass       = "readiness-bar-fill--red";
   }
 
   const dot = document.getElementById("readiness-dot");
   dot.className = `readiness-dot ${readinessClass}`;
   document.getElementById("readiness-label").textContent = readinessText;
+
+  // Progress bar
+  const pct = Math.min(Math.round(ratio * 100), 100);
+  const barFill = document.getElementById("readiness-bar-fill");
+  const barPct  = document.getElementById("readiness-bar-pct");
+  barFill.style.width = pct + "%";
+  barFill.className   = `readiness-bar-fill ${barClass}`;
+  barPct.textContent  = Math.round(ratio * 100) + "%";
 
   // --- Gap / Surplus ---
   const gapEl = document.getElementById("dash-gap-surplus");
@@ -884,7 +968,6 @@ function renderDashboard() {
     : 0;
   const savingsRateEl = document.getElementById("dash-savings-rate");
   savingsRateEl.textContent = `${savingsRate}%`;
-  // Color code the savings rate
   savingsRateEl.className = "dash-stat-value " + (savingsRate >= 15 ? "dash-green" : savingsRate >= 10 ? "dash-yellow" : savingsRate >= 5 ? "dash-neutral" : "dash-red");
 
   // --- Key Facts ---
@@ -944,12 +1027,13 @@ function initBudgetSubitemSync() {
       const cat        = row.dataset.category;
       const totalInput = document.getElementById(`budget-total-${cat}`);
       let sum = 0;
-      panel.querySelectorAll("input[type='number']").forEach(inp => {
-        sum += parseFloat(inp.value) || 0;
+      panel.querySelectorAll(".formula-input").forEach(inp => {
+        sum += evaluateFormulaInput(inp.value);
       });
-      totalInput.value = sum > 0 ? sum : 0;
+      totalInput.value = sum > 0 ? String(sum) : "";
       updateBudgetTotalsDisplay();
       updateBudgetVisuals();
+      saveState();
     });
   });
 }
@@ -959,6 +1043,7 @@ function initBudgetCategoryInputs() {
     inp.addEventListener("input", () => {
       updateBudgetTotalsDisplay();
       updateBudgetVisuals();
+      saveState();
     });
   });
 }
@@ -1007,6 +1092,7 @@ function initLifestylePills() {
 
       syncRetirementState();
       renderDashboard();
+      saveState();
     });
   });
 }
@@ -1018,16 +1104,148 @@ function initLiveUpdates() {
   document.getElementById("calculator-form").addEventListener("input", () => {
     syncRetirementState();
     renderDashboard();
+    saveState();
   });
 
   document.getElementById("cpp-start-age").addEventListener("change", () => {
     syncRetirementState();
     renderDashboard();
+    saveState();
   });
   document.getElementById("show-real").addEventListener("change", () => {
     syncRetirementState();
     renderDashboard();
+    saveState();
   });
+}
+
+
+// --- LOCALSTORAGE SAVE / LOAD / RESET ---
+
+// All input IDs to persist (text formula inputs + checkbox + select)
+const CALC_INPUT_IDS = [
+  "current-age", "retirement-age", "withdrawal-years", "annual-income",
+  "monthly-goal", "cpp-years", "cpp-start-age", "oas-years", "inflation-rate",
+  "rrsp-balance", "rrsp-contribution", "rrsp-return",
+  "tfsa-balance", "tfsa-contribution", "tfsa-return",
+  "nonreg-balance", "nonreg-contribution", "nonreg-return",
+  "cash-balance", "cash-contribution", "cash-return",
+];
+
+const BUDGET_INPUT_IDS = [
+  "budget-total-housing", "budget-housing-rent", "budget-housing-utilities",
+  "budget-housing-insurance", "budget-housing-maintenance",
+  "budget-total-food", "budget-food-groceries", "budget-food-dining", "budget-food-coffee",
+  "budget-total-transport", "budget-transport-car", "budget-transport-gas",
+  "budget-transport-insurance", "budget-transport-transit", "budget-transport-parking",
+  "budget-total-health", "budget-health-dental", "budget-health-rx",
+  "budget-health-gym", "budget-health-therapy",
+  "budget-total-personal", "budget-personal-clothing", "budget-personal-haircuts",
+  "budget-personal-care",
+  "budget-total-entertainment", "budget-entertainment-streaming", "budget-entertainment-hobbies",
+  "budget-entertainment-events", "budget-entertainment-travel",
+  "budget-total-family", "budget-family-childcare", "budget-family-pet",
+  "budget-family-gifts", "budget-family-donations",
+  "budget-total-other", "budget-other-misc", "budget-other-subscriptions",
+];
+
+function saveState() {
+  const state = {};
+
+  CALC_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    state[id] = el.value;
+  });
+
+  // Checkbox
+  const showReal = document.getElementById("show-real");
+  if (showReal) state["show-real"] = showReal.checked;
+
+  BUDGET_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    state[id] = el.value;
+  });
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    // Silently fail if storage is unavailable
+  }
+}
+
+function loadState() {
+  let state;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    state = JSON.parse(raw);
+  } catch (e) {
+    return false;
+  }
+
+  // Restore calculator inputs
+  CALC_INPUT_IDS.forEach(id => {
+    if (!(id in state)) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = state[id];
+  });
+
+  // Restore checkbox
+  if ("show-real" in state) {
+    const el = document.getElementById("show-real");
+    if (el) el.checked = state["show-real"];
+  }
+
+  // Restore budget inputs
+  BUDGET_INPUT_IDS.forEach(id => {
+    if (!(id in state)) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = state[id];
+  });
+
+  return true;
+}
+
+function resetState() {
+  if (!confirm("Reset all inputs to defaults? This cannot be undone.")) return;
+
+  // Reset calculator inputs to defaults
+  Object.entries(DEFAULTS).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === "checkbox") {
+      el.checked = val;
+    } else {
+      el.value = String(val);
+    }
+  });
+
+  // Clear budget inputs
+  BUDGET_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  // Clear saved state
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+
+  // Re-run all syncs
+  syncRetirementState();
+  updateBudgetTotalsDisplay();
+  updateBudgetVisuals();
+  renderDashboard();
+
+  // Hide results
+  document.getElementById("results").classList.add("hidden");
+}
+
+function initResetButton() {
+  const btn = document.getElementById("reset-btn");
+  if (btn) btn.addEventListener("click", resetState);
 }
 
 
@@ -1040,9 +1258,22 @@ document.addEventListener("DOMContentLoaded", () => {
   initBudgetCategoryInputs();
   initBudgetSubitemSync();
   initLiveUpdates();
+  initFormulaInputs();
+  initResetButton();
 
   document.getElementById("calculate-btn").addEventListener("click", calculate);
 
+  // Restore saved state (if any), otherwise leave defaults
+  const restored = loadState();
+
+  // After loading, run all the startup syncs
   syncRetirementState();
+  updateBudgetTotalsDisplay();
+  updateBudgetVisuals();
   renderDashboard();
+
+  // If we restored budget data, re-trigger budget totals display
+  if (restored) {
+    updateBudgetTotalsDisplay();
+  }
 });

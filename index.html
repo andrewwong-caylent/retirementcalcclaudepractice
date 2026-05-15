@@ -39,11 +39,20 @@
 
         <!-- Row 1: Readiness + Gap/Surplus -->
         <div class="dashboard-top-row">
-          <div class="card dashboard-readiness">
-            <div class="readiness-dot" id="readiness-dot"></div>
-            <div>
-              <span class="readiness-label" id="readiness-label">—</span>
-              <span class="hint">Retirement Readiness</span>
+          <div class="card dashboard-readiness-card">
+            <div class="readiness-top-row">
+              <div class="readiness-dot" id="readiness-dot"></div>
+              <div>
+                <span class="readiness-label" id="readiness-label">—</span>
+                <span class="hint">Retirement Readiness</span>
+              </div>
+            </div>
+            <!-- Progress bar -->
+            <div class="readiness-bar-wrap">
+              <div class="readiness-bar-track">
+                <div class="readiness-bar-fill" id="readiness-bar-fill"></div>
+              </div>
+              <span class="readiness-bar-pct" id="readiness-bar-pct">0%</span>
             </div>
           </div>
           <div class="card dashboard-stat">
@@ -132,7 +141,7 @@
             <div class="budget-row-header">
               <span class="budget-cat-dot" style="background:#3b82f6"></span>
               <span class="budget-row-label">Housing</span>
-              <input type="number" class="budget-cat-input" id="budget-total-housing" min="0" value="0" />
+              <input type="text" inputmode="decimal" class="budget-cat-input formula-input" id="budget-total-housing" placeholder="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Housing">
                 <span class="budget-chevron">&#8964;</span>
               </button>
@@ -140,19 +149,19 @@
             <div class="budget-subitems" id="budget-sub-housing" hidden>
               <div class="budget-subitem">
                 <label for="budget-housing-rent">Rent / Mortgage</label>
-                <input type="number" id="budget-housing-rent" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-housing-rent" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-housing-utilities">Utilities</label>
-                <input type="number" id="budget-housing-utilities" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-housing-utilities" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-housing-insurance">Home Insurance</label>
-                <input type="number" id="budget-housing-insurance" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-housing-insurance" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-housing-maintenance">Maintenance</label>
-                <input type="number" id="budget-housing-maintenance" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-housing-maintenance" placeholder="0" />
               </div>
             </div>
           </div>
@@ -162,7 +171,7 @@
             <div class="budget-row-header">
               <span class="budget-cat-dot" style="background:#22c55e"></span>
               <span class="budget-row-label">Food</span>
-              <input type="number" class="budget-cat-input" id="budget-total-food" min="0" value="0" />
+              <input type="text" inputmode="decimal" class="budget-cat-input formula-input" id="budget-total-food" placeholder="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Food">
                 <span class="budget-chevron">&#8964;</span>
               </button>
@@ -170,15 +179,15 @@
             <div class="budget-subitems" id="budget-sub-food" hidden>
               <div class="budget-subitem">
                 <label for="budget-food-groceries">Groceries</label>
-                <input type="number" id="budget-food-groceries" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-food-groceries" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-food-dining">Dining Out</label>
-                <input type="number" id="budget-food-dining" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-food-dining" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-food-coffee">Coffee</label>
-                <input type="number" id="budget-food-coffee" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-food-coffee" placeholder="0" />
               </div>
             </div>
           </div>
@@ -188,7 +197,7 @@
             <div class="budget-row-header">
               <span class="budget-cat-dot" style="background:#f97316"></span>
               <span class="budget-row-label">Transport</span>
-              <input type="number" class="budget-cat-input" id="budget-total-transport" min="0" value="0" />
+              <input type="text" inputmode="decimal" class="budget-cat-input formula-input" id="budget-total-transport" placeholder="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Transport">
                 <span class="budget-chevron">&#8964;</span>
               </button>
@@ -196,23 +205,23 @@
             <div class="budget-subitems" id="budget-sub-transport" hidden>
               <div class="budget-subitem">
                 <label for="budget-transport-car">Car Payment</label>
-                <input type="number" id="budget-transport-car" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-transport-car" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-transport-gas">Gas</label>
-                <input type="number" id="budget-transport-gas" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-transport-gas" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-transport-insurance">Car Insurance</label>
-                <input type="number" id="budget-transport-insurance" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-transport-insurance" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-transport-transit">Transit</label>
-                <input type="number" id="budget-transport-transit" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-transport-transit" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-transport-parking">Parking</label>
-                <input type="number" id="budget-transport-parking" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-transport-parking" placeholder="0" />
               </div>
             </div>
           </div>
@@ -222,7 +231,7 @@
             <div class="budget-row-header">
               <span class="budget-cat-dot" style="background:#06b6d4"></span>
               <span class="budget-row-label">Health</span>
-              <input type="number" class="budget-cat-input" id="budget-total-health" min="0" value="0" />
+              <input type="text" inputmode="decimal" class="budget-cat-input formula-input" id="budget-total-health" placeholder="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Health">
                 <span class="budget-chevron">&#8964;</span>
               </button>
@@ -230,19 +239,19 @@
             <div class="budget-subitems" id="budget-sub-health" hidden>
               <div class="budget-subitem">
                 <label for="budget-health-dental">Dental</label>
-                <input type="number" id="budget-health-dental" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-health-dental" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-health-rx">Prescriptions</label>
-                <input type="number" id="budget-health-rx" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-health-rx" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-health-gym">Gym</label>
-                <input type="number" id="budget-health-gym" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-health-gym" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-health-therapy">Therapy</label>
-                <input type="number" id="budget-health-therapy" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-health-therapy" placeholder="0" />
               </div>
             </div>
           </div>
@@ -252,7 +261,7 @@
             <div class="budget-row-header">
               <span class="budget-cat-dot" style="background:#8b5cf6"></span>
               <span class="budget-row-label">Personal</span>
-              <input type="number" class="budget-cat-input" id="budget-total-personal" min="0" value="0" />
+              <input type="text" inputmode="decimal" class="budget-cat-input formula-input" id="budget-total-personal" placeholder="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Personal">
                 <span class="budget-chevron">&#8964;</span>
               </button>
@@ -260,15 +269,15 @@
             <div class="budget-subitems" id="budget-sub-personal" hidden>
               <div class="budget-subitem">
                 <label for="budget-personal-clothing">Clothing</label>
-                <input type="number" id="budget-personal-clothing" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-personal-clothing" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-personal-haircuts">Haircuts</label>
-                <input type="number" id="budget-personal-haircuts" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-personal-haircuts" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-personal-care">Personal Care</label>
-                <input type="number" id="budget-personal-care" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-personal-care" placeholder="0" />
               </div>
             </div>
           </div>
@@ -278,7 +287,7 @@
             <div class="budget-row-header">
               <span class="budget-cat-dot" style="background:#ec4899"></span>
               <span class="budget-row-label">Entertainment</span>
-              <input type="number" class="budget-cat-input" id="budget-total-entertainment" min="0" value="0" />
+              <input type="text" inputmode="decimal" class="budget-cat-input formula-input" id="budget-total-entertainment" placeholder="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Entertainment">
                 <span class="budget-chevron">&#8964;</span>
               </button>
@@ -286,19 +295,19 @@
             <div class="budget-subitems" id="budget-sub-entertainment" hidden>
               <div class="budget-subitem">
                 <label for="budget-entertainment-streaming">Streaming</label>
-                <input type="number" id="budget-entertainment-streaming" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-entertainment-streaming" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-entertainment-hobbies">Hobbies</label>
-                <input type="number" id="budget-entertainment-hobbies" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-entertainment-hobbies" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-entertainment-events">Events</label>
-                <input type="number" id="budget-entertainment-events" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-entertainment-events" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-entertainment-travel">Travel</label>
-                <input type="number" id="budget-entertainment-travel" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-entertainment-travel" placeholder="0" />
               </div>
             </div>
           </div>
@@ -308,7 +317,7 @@
             <div class="budget-row-header">
               <span class="budget-cat-dot" style="background:#eab308"></span>
               <span class="budget-row-label">Family</span>
-              <input type="number" class="budget-cat-input" id="budget-total-family" min="0" value="0" />
+              <input type="text" inputmode="decimal" class="budget-cat-input formula-input" id="budget-total-family" placeholder="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Family">
                 <span class="budget-chevron">&#8964;</span>
               </button>
@@ -316,19 +325,19 @@
             <div class="budget-subitems" id="budget-sub-family" hidden>
               <div class="budget-subitem">
                 <label for="budget-family-childcare">Childcare</label>
-                <input type="number" id="budget-family-childcare" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-family-childcare" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-family-pet">Pet</label>
-                <input type="number" id="budget-family-pet" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-family-pet" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-family-gifts">Gifts</label>
-                <input type="number" id="budget-family-gifts" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-family-gifts" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-family-donations">Donations</label>
-                <input type="number" id="budget-family-donations" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-family-donations" placeholder="0" />
               </div>
             </div>
           </div>
@@ -338,7 +347,7 @@
             <div class="budget-row-header">
               <span class="budget-cat-dot" style="background:#94a3b8"></span>
               <span class="budget-row-label">Other</span>
-              <input type="number" class="budget-cat-input" id="budget-total-other" min="0" value="0" />
+              <input type="text" inputmode="decimal" class="budget-cat-input formula-input" id="budget-total-other" placeholder="0" />
               <button type="button" class="budget-expand-btn" aria-expanded="false" aria-label="Expand Other">
                 <span class="budget-chevron">&#8964;</span>
               </button>
@@ -346,12 +355,24 @@
             <div class="budget-subitems" id="budget-sub-other" hidden>
               <div class="budget-subitem">
                 <label for="budget-other-misc">Miscellaneous</label>
-                <input type="number" id="budget-other-misc" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-other-misc" placeholder="0" />
               </div>
               <div class="budget-subitem">
                 <label for="budget-other-subscriptions">Subscriptions</label>
-                <input type="number" id="budget-other-subscriptions" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="budget-other-subscriptions" placeholder="0" />
               </div>
+            </div>
+          </div>
+
+          <!-- SAVINGS (synced from Calculator) -->
+          <div class="budget-row budget-row--savings" data-category="savings">
+            <div class="budget-row-header">
+              <span class="budget-cat-dot" style="background:#7c3aed"></span>
+              <span class="budget-row-label">
+                Savings
+                <span class="budget-savings-hint">Synced from Calculator</span>
+              </span>
+              <span class="budget-savings-value" id="budget-savings-display">$0</span>
             </div>
           </div>
 
@@ -401,6 +422,11 @@
       <h1>Canadian Retirement Calculator</h1>
       <p class="subtitle">Estimate your retirement income from CPP, OAS, and personal savings.</p>
 
+      <!-- Reset button -->
+      <div class="calculator-toolbar">
+        <button type="button" id="reset-btn" class="reset-btn">Reset All</button>
+      </div>
+
       <form id="calculator-form">
 
         <!-- SECTION 1: About You -->
@@ -409,23 +435,23 @@
 
           <div class="field">
             <label for="current-age">Current Age</label>
-            <input type="number" id="current-age" min="18" max="90" value="35" />
+            <input type="text" inputmode="decimal" class="formula-input" id="current-age" placeholder="35" />
           </div>
 
           <div class="field">
             <label for="retirement-age">Retirement Age</label>
-            <input type="number" id="retirement-age" min="55" max="75" value="65" />
+            <input type="text" inputmode="decimal" class="formula-input" id="retirement-age" placeholder="65" />
           </div>
 
           <div class="field">
             <label for="withdrawal-years">Years in Retirement</label>
-            <input type="number" id="withdrawal-years" min="1" max="50" value="25" />
+            <input type="text" inputmode="decimal" class="formula-input" id="withdrawal-years" placeholder="25" />
             <span class="hint">How many years will your savings need to last? Used to calculate monthly withdrawals.</span>
           </div>
 
           <div class="field">
             <label for="annual-income">Current Annual Income ($)</label>
-            <input type="number" id="annual-income" min="0" value="75000" />
+            <input type="text" inputmode="decimal" class="formula-input" id="annual-income" placeholder="75000" />
           </div>
 
           <!-- RETIREMENT GOALS subsection -->
@@ -444,7 +470,7 @@
 
           <div class="field">
             <label for="monthly-goal">Monthly Retirement Goal ($)</label>
-            <input type="number" id="monthly-goal" min="0" value="5000" />
+            <input type="text" inputmode="decimal" class="formula-input" id="monthly-goal" placeholder="5000" />
             <span class="hint">Pre-filled by your lifestyle selection above. You can override this.</span>
           </div>
 
@@ -457,7 +483,7 @@
 
           <div class="field">
             <label for="cpp-years">Years Contributed to CPP (so far)</label>
-            <input type="number" id="cpp-years" min="0" max="47" value="10" />
+            <input type="text" inputmode="decimal" class="formula-input" id="cpp-years" placeholder="10" />
             <span class="hint">Enter how many years you have contributed so far. The calculator will add your remaining working years automatically.</span>
           </div>
 
@@ -479,7 +505,7 @@
 
           <div class="field">
             <label for="oas-years">Years Lived in Canada After Age 18</label>
-            <input type="number" id="oas-years" min="0" max="40" value="40" />
+            <input type="text" inputmode="decimal" class="formula-input" id="oas-years" placeholder="40" />
             <span class="hint">You need 40 years for the full amount. Fewer years = proportionally less.</span>
           </div>
         </section>
@@ -497,15 +523,15 @@
               <p class="hint">Registered Retirement Savings Plan. Contributions are tax-deductible; withdrawals are taxed as income.</p>
               <div class="field">
                 <label for="rrsp-balance">Current Balance ($)</label>
-                <input type="number" id="rrsp-balance" min="0" value="50000" />
+                <input type="text" inputmode="decimal" class="formula-input" id="rrsp-balance" placeholder="0" />
               </div>
               <div class="field">
                 <label for="rrsp-contribution">Monthly Contribution ($)</label>
-                <input type="number" id="rrsp-contribution" min="0" value="500" />
+                <input type="text" inputmode="decimal" class="formula-input" id="rrsp-contribution" placeholder="0" />
               </div>
               <div class="field">
                 <label for="rrsp-return">Expected Annual Return (%)</label>
-                <input type="number" id="rrsp-return" min="0" max="20" step="0.5" value="5" />
+                <input type="text" inputmode="decimal" class="formula-input" id="rrsp-return" placeholder="5" />
               </div>
             </div>
 
@@ -515,15 +541,15 @@
               <p class="hint">Tax-Free Savings Account. Contributions are not tax-deductible, but growth and withdrawals are tax-free.</p>
               <div class="field">
                 <label for="tfsa-balance">Current Balance ($)</label>
-                <input type="number" id="tfsa-balance" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="tfsa-balance" placeholder="0" />
               </div>
               <div class="field">
                 <label for="tfsa-contribution">Monthly Contribution ($)</label>
-                <input type="number" id="tfsa-contribution" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="tfsa-contribution" placeholder="0" />
               </div>
               <div class="field">
                 <label for="tfsa-return">Expected Annual Return (%)</label>
-                <input type="number" id="tfsa-return" min="0" max="20" step="0.5" value="5" />
+                <input type="text" inputmode="decimal" class="formula-input" id="tfsa-return" placeholder="5" />
               </div>
             </div>
 
@@ -533,15 +559,15 @@
               <p class="hint">Regular investment account. No contribution limits, but investment gains are taxable each year.</p>
               <div class="field">
                 <label for="nonreg-balance">Current Balance ($)</label>
-                <input type="number" id="nonreg-balance" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="nonreg-balance" placeholder="0" />
               </div>
               <div class="field">
                 <label for="nonreg-contribution">Monthly Contribution ($)</label>
-                <input type="number" id="nonreg-contribution" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="nonreg-contribution" placeholder="0" />
               </div>
               <div class="field">
                 <label for="nonreg-return">Expected Annual Return (%)</label>
-                <input type="number" id="nonreg-return" min="0" max="20" step="0.5" value="5" />
+                <input type="text" inputmode="decimal" class="formula-input" id="nonreg-return" placeholder="5" />
               </div>
             </div>
 
@@ -551,15 +577,15 @@
               <p class="hint">Savings account, GICs, or cash. Lower risk and lower return than investments.</p>
               <div class="field">
                 <label for="cash-balance">Current Balance ($)</label>
-                <input type="number" id="cash-balance" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="cash-balance" placeholder="0" />
               </div>
               <div class="field">
                 <label for="cash-contribution">Monthly Contribution ($)</label>
-                <input type="number" id="cash-contribution" min="0" value="0" />
+                <input type="text" inputmode="decimal" class="formula-input" id="cash-contribution" placeholder="0" />
               </div>
               <div class="field">
                 <label for="cash-return">Expected Annual Return (%)</label>
-                <input type="number" id="cash-return" min="0" max="20" step="0.5" value="2" />
+                <input type="text" inputmode="decimal" class="formula-input" id="cash-return" placeholder="2" />
               </div>
             </div>
 
@@ -573,7 +599,7 @@
 
           <div class="field">
             <label for="inflation-rate">Expected Annual Inflation Rate (%)</label>
-            <input type="number" id="inflation-rate" min="0" max="10" step="0.5" value="2.5" />
+            <input type="text" inputmode="decimal" class="formula-input" id="inflation-rate" placeholder="2.5" />
             <span class="hint">The Bank of Canada targets ~2% inflation. 2-3% is a reasonable assumption.</span>
           </div>
 
