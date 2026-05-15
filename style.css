@@ -563,7 +563,8 @@ select:focus {
 }
 
 /* Fixed-width category total — right-aligned text */
-.budget-cat-input {
+/* Uses higher specificity to override the general formula-input width:100% rule */
+input.budget-cat-input {
   width: 110px;
   flex-shrink: 0;
   text-align: right;
@@ -1049,7 +1050,7 @@ select:focus {
     grid-template-columns: repeat(2, 1fr);
   }
   /* Budget */
-  .budget-cat-input {
+  input.budget-cat-input {
     width: 80px;
   }
   .budget-subitems {
@@ -1071,7 +1072,7 @@ select:focus {
   .dashboard-income-row {
     grid-template-columns: 1fr;
   }
-  .budget-cat-input {
+  input.budget-cat-input {
     width: 70px;
   }
 }
